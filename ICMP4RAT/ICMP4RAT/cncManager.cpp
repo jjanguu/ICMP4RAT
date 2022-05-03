@@ -8,7 +8,8 @@ cncManager::cncManager() {
 		this->hConnect = WinHttpConnect(this->hSession, this->server, INTERNET_DEFAULT_HTTP_PORT, 0);
 }
 
-void cncManager::sendHttpRequest(LPCWSTR data, DWORD dlen) {
+void cncManager::sendHttpRequest(LPVOID data) {
+	DWORD dlen = strlen((const char *)data);
 	if (this->hConnect)
 		this->hRequest = WinHttpOpenRequest(this->hConnect, L"POST", this->index, NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
 
@@ -16,10 +17,11 @@ void cncManager::sendHttpRequest(LPCWSTR data, DWORD dlen) {
 	/*if (this->hRequest)
 		this->bResults = WinHttpSendRequest(this->hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, WINHTTP_NO_REQUEST_DATA, 0, 0, 0);*/
 	if (hRequest)
-		bResults = WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, (LPVOID)data, dlen, dlen, 0);
+		bResults = WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, data, dlen, dlen, 0);
 
 	if (this->bResults)
 		this->bResults = WinHttpReceiveResponse(this->hRequest, NULL);
+
 
 	if (!this->bResults)
 		std::cout << "Error" << GetLastError() << "has occurred." << std::endl;
@@ -34,6 +36,6 @@ cncManager::~cncManager() {
 
 int main() {
 	cncManager client;
-	client.sendHttpRequest(L"testtest", 8);
+	client.sendHttpRequest((LPVOID)"testtest");
 	
 }

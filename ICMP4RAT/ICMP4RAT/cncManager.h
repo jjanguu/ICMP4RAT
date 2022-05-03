@@ -21,7 +21,7 @@ private:
 public:
 	cncManager();
 	~cncManager();
-	void sendHttpRequest(LPCWSTR data, DWORD dlen);
+	void sendHttpRequest(LPVOID data);
 
 
 };
