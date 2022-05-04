@@ -3,6 +3,8 @@
 #include <ole2.h>
 #include <olectl.h>
 #include "commandManager.h"
+#include "cncManager.h"
+#include "DDproto.h"
 
 // ls ±¸Çö¿ë
 void commandManager::getFilelist(LPCWSTR path) {
