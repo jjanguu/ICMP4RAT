@@ -19,6 +19,8 @@ void commandManager::getFilelist(LPCWSTR path) {
     }
 }
 
+
+/* 화면 스샷 구현용 WriteFile 삭제하고 Stream을 바로 sendData로 넘겨줘야할듯*/
 bool commandManager::getScreen(LPCSTR fname) {
     {
         int w = GetSystemMetrics(SM_CXVIRTUALSCREEN);
