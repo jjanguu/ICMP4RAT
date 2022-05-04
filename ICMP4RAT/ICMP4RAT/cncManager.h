@@ -24,6 +24,6 @@ public:
 	~cncManager();
 	void sendHttpRequest(LPVOID data, DWORD dlen);
 	void sendBeacon();
-
+	void responseParser(UCHAR* response, DWORD len);
 
 };

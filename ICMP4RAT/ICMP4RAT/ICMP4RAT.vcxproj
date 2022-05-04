@@ -142,9 +142,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="cncManager.cpp" />
+    <ClCompile Include="commandManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cncManager.h" />
+    <ClInclude Include="commandManager.h" />
     <ClInclude Include="DDproto.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

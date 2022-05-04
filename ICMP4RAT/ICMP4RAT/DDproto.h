@@ -1,19 +1,22 @@
 #pragma once
+
+#define DDPROTO_HEADER 0xdd
+
 struct DDprotocol
 {
-	unsigned char header = 0xDD;
-	unsigned char type;
-	unsigned short len;
-	unsigned int seq;
-
+	UCHAR header = DDPROTO_HEADER;
+	UCHAR type;
+	USHORT len;
+	DWORD seq;
 };
 
 enum DDtype {
-	error = 0,
+	error = 0x0,
 	beaconRequest,
 	beaconResponse,
 	shellRequest,
 	shellResponse,
 	ftpReqeust,
-	ftpResponse
+	ftpResponse,
+	none = 0x10
 };
