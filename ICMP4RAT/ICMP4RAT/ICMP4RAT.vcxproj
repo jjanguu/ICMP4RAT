@@ -143,6 +143,7 @@
   <ItemGroup>
     <ClCompile Include="cncManager.cpp" />
     <ClCompile Include="commandManager.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cncManager.h" />
