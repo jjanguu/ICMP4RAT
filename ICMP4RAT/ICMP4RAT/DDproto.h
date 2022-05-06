@@ -1,6 +1,9 @@
 #pragma once
 
 #define DDPROTO_HEADER 0xdd
+#define BEACON_DATA NULL
+#define BEACON_DATA_LEN 0
+#define MAX_DATA_LEN 0xffff
 
 struct DDprotocol
 {
@@ -16,7 +19,7 @@ enum DDtype {
 	beaconResponse,
 	shellRequest,
 	shellResponse,
-	ftpReqeust,
+	ftpRequest,
 	ftpResponse,
 	none = 0x10
 };

