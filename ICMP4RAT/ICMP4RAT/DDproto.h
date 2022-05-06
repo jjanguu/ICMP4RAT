@@ -5,6 +5,7 @@
 #define BEACON_DATA_LEN 0
 #define MAX_DATA_LEN 0xffff
 
+
 struct DDprotocol
 {
 	UCHAR header = DDPROTO_HEADER;

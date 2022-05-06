@@ -51,7 +51,6 @@ LPVOID commandManager::getScreen() {
 
         HPALETTE hpal = NULL;
 
-        bool result = false;
         PICTDESC pd;
 
         pd.cbSizeofstruct = sizeof(PICTDESC);
@@ -74,13 +73,11 @@ LPVOID commandManager::getScreen() {
         GetHGlobalFromStream(stream, &mem);
         LPVOID data = GlobalLock(mem);
 
-        DWORD bytes_written;
+        this->screen_len = bytes_streamed;
 
-        this->data_len = bytes_streamed;
-
-        UCHAR* ptr = new UCHAR[this->data_len];
-        memset(ptr, 0, this->data_len);
-        memcpy(ptr, data, this->data_len);
+        UCHAR* ptr = new UCHAR[this->screen_len];
+        memset(ptr, 0, this->screen_len);
+        memcpy(ptr, data, this->screen_len);
 
 
         GlobalUnlock(mem);
@@ -90,4 +87,28 @@ LPVOID commandManager::getScreen() {
 
         return (LPVOID)ptr;
     }
+}
+
+LPVOID commandManager::getFile(std::string &path) {
+    FILE* fp = NULL;
+    UCHAR* ptr = NULL;
+    this->file_len = 0;
+
+    int a = fopen_s(&fp, path.c_str(), "rb+");
+    if (fp) {
+        fseek(fp, 0, SEEK_END);
+        ULONG64 size = ftell(fp);
+        rewind(fp);     
+
+        ptr = new UCHAR[size];
+        memset(ptr, 0, size);
+        fread(ptr, size, 1, fp);
+
+        fclose(fp);
+
+        this->file_len = size;
+    }
+    
+    return ptr;
+
 }
