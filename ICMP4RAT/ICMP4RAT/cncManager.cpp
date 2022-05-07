@@ -183,7 +183,7 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
             {
                 case ACK:
                 {
-                    //this->printParsedResponse(resData, "ACK");
+                    this->printParsedResponse(resData, "ACK");
                     break;
                 }
 
@@ -248,12 +248,15 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
 }
 
 void cncManager::printParsedResponse(DDprotocol* resData,std::string type) {
-    std::cout << "==parsed data==" << std::endl;
-    std::cout << "header : " << resData->header << std::endl;
-    std::cout << "type :" << type << std::endl;
-    std::cout << "length :" << resData->len << std::endl;
-    std::cout << "sequence :" << resData->seq << std::endl;
-    std::cout << "===============" << std::endl;
+    if (this->print_setting) {
+        std::cout << "==parsed data==" << std::endl;
+        std::cout << "header : " << resData->header << std::endl;
+        std::cout << "type :" << type << std::endl;
+        std::cout << "length :" << resData->len << std::endl;
+        std::cout << "sequence :" << resData->seq << std::endl;
+        std::cout << "===============" << std::endl;
+    }
+
 }
 
 void cncManager::handleShellRequest() {

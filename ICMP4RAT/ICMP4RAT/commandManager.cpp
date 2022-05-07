@@ -99,7 +99,6 @@ void commandManager::getFile(std::string& path) {
     DDprotocol proto;
     proto.header = 0xdd;
     proto.type = ftpResponse;
-    this->file_len = 0;
 
     fopen_s(&fp, path.c_str(), "rb+");
     if (fp) {
