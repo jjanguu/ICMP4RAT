@@ -5,6 +5,7 @@
 #include <winhttp.h>
 #include <string>
 #include <list>
+#include <mutex>
 
 class cncManager
 {
@@ -38,4 +39,5 @@ public:
 	LPVOID dataEncrypt(LPVOID data);
 	LPVOID dataDecrypt(LPVOID data);
 	bool print_setting = false;
+	std::mutex m1, m2;
 };

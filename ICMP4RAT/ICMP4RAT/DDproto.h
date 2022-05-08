@@ -5,6 +5,7 @@
 #define BEACON_DATA NULL
 #define BEACON_DATA_LEN 0
 #define DATA_BUF_SIZE 0x1C200000 //450MB
+#define LAST_SEQUENCE 0xFFFFFFFF
 
 
 struct DDprotocol
