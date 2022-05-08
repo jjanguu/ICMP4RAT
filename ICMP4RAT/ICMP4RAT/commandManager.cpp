@@ -2,6 +2,10 @@
 #include <iostream>
 #include <ole2.h>
 #include <olectl.h>
+#include <Psapi.h>
+#include <tchar.h>
+#include <map>
+
 #include "commandManager.h"
 #include "cncManager.h"
 #include "DDproto.h"
@@ -24,6 +28,63 @@ std::string commandManager::reverseShell(std::string cmd) {
     }
     _pclose(pipe);
     return result;
+}
+
+// pid에 해당하는 모듈 이름을 리턴
+std::wstring commandManager::pidToName(DWORD procID) {
+    TCHAR procName[MAX_PATH] = L"";
+
+    HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, procID); // pid에 해당하는 모듈의 handle get
+
+    if (NULL != hProc) {
+        HMODULE hModule;
+        DWORD resultLen;
+
+        if (EnumProcessModules(hProc, &hModule, sizeof(hModule), &resultLen)) {
+            GetModuleBaseName(hProc, hModule, procName, sizeof(procName) / sizeof(TCHAR));
+        }
+    }
+
+    std::wstring result = procName;
+
+    CloseHandle(hProc);
+
+    return result;
+}
+
+// <pid, module name> 형태로 반환
+std::map<DWORD, std::wstring> commandManager::getProcessList() {
+    std::map<DWORD, std::wstring> procDict;
+
+    DWORD procIDList[1024];
+    DWORD byteLen;
+
+    std::wstring pName = L"";
+
+    // pid 얻어오기
+    if (!EnumProcesses(procIDList, sizeof(procIDList), &byteLen)) {
+        // TODO Fail Logic
+        return procDict;
+    }
+
+    DWORD count = byteLen / sizeof(DWORD);
+
+    // pid와 대응하는 모듈 이름을 얻어옴
+    for (DWORD i = 0; i < count; i++) {
+        if (procIDList[i] != 0) {
+            pName = commandManager::pidToName(procIDList[i]);
+            if(pName != L"")
+                procDict.insert({ procIDList[i],  pName});
+        }
+    }
+
+    /*
+    for (auto process : procDict) {
+        wprintf(L"%40s(%d)\n", process.second.c_str(), process.first);
+    }
+    */
+    
+    return procDict;
 }
 
 

