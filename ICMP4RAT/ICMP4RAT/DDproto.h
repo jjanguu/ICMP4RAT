@@ -26,3 +26,7 @@ enum DDtype {
 	ftpResponse,
 	none = 0x10
 };
+
+enum DDErrorCode {
+	file_error = 0x01,
+};
