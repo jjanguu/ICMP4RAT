@@ -202,7 +202,8 @@ void commandManager::getFile(std::string& path, LPCWSTR server) {
     // 파일을 못찾을 시 error 전송
     else
     {
-        client.sendData(error, 1, (LPVOID)std::to_string(file_error).c_str());
+        std::string file_err = std::to_string(file_error);
+        client.sendData(error, file_err.size(), (LPVOID)file_err.c_str());
     }
     delete dataFrame;
     delete[] buffer;
