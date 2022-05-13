@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <Windows.h>
 
@@ -57,39 +58,3 @@ PDWORD getFunctionAddressByHash(char* library, DWORD hash)
     }
 }
 
-using customGetEnvironmentVariableA = LSTATUS(NTAPI*)(
-    LPCSTR lpName,
-    LPSTR lpBuffer,
-    DWORD nSize
-);
-
-using customCreateDirectoryA = LSTATUS(NTAPI*)(
-    LPCSTR lpPathName,
-    LPSECURITY_ATTRIBUTES lpSecurityAttributes
-);
-
-using customGetModuleFileNameA = LSTATUS(NTAPI*)(
-    HMODULE hModule,
-    LPSTR lpFilename,
-    DWORD nSize
-);
-
-using customRegOpenKeyExA = LSTATUS(NTAPI*)(
-    HKEY hKey,
-    LPCSTR lpSubKey,
-    DWORD ulOptions,
-    REGSAM samDesired,
-    PHKEY phkResult
-);
-
-using customRegSetValueExA = LSTATUS(NTAPI*)(
-    HKEY hKey,
-    LPCSTR lpValueName,
-    DWORD Reserved,
-    DWORD dwType,
-    const BYTE* lpData,
-    DWORD      cbData
-);
-using customRegCloseKey = LSTATUS(NTAPI*)(
-    HKEY hKey
-    ); 
