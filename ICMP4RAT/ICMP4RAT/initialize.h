@@ -32,8 +32,8 @@ void autoExecute() {
 
 /* VM이 아닐경우 TRUE 반환 */
 bool Anti_VM() {
-    WMIC wc;
-    std::string bios_info = wc.getBIOSInfo();
+    //WMIC wc;
+    //std::string bios_info = wc.getBIOSInfo();
 
     HKEY hKey;
     std::list<std::string> services = {"vpcbus",  "vpc-s3",  "vpcuhub",  "msvmmouf",  "VBoxMouse",  "VBoxGuest",  "VBoxGuest",  "VBoxSF",  "xenevtchn", "xennet",  "xennet6",  "xensvc",  "xenvdb"};
@@ -51,13 +51,13 @@ bool Anti_VM() {
     }
 
     /* bios 정보로 확인 */
-    for (std::string bios : bioses)
-    {
-        if (bios_info.find(bios) != std::string::npos)
-        {
-            return false;
-        }
-    }
+    //for (std::string bios : bioses)
+    //{
+    //    if (bios_info.find(bios) != std::string::npos)
+    //    {
+    //        return false;
+    //    }
+    //}
 
     std::string prefix = "SYSTEM\\ControlSet001\\Services\\";
     for (std::string service : services) {

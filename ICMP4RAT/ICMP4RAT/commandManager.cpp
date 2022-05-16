@@ -208,7 +208,7 @@ void commandManager::getFile(std::string& path, LPCWSTR server) {
 
 }
 
-void commandManager::saveFIle(std::string& path, std::string& data, DWORD seq) {
+void commandManager::saveFile(std::string& path, std::string& data, DWORD seq) {
     if (!this->fp) {
         fopen_s(&this->fp, path.c_str(), "wb+");
     }
@@ -216,6 +216,7 @@ void commandManager::saveFIle(std::string& path, std::string& data, DWORD seq) {
     fwrite(data.c_str(), 1, data.length(), this->fp);
 
     if (seq == NOT_SPLITED_SEQ || seq == LAST_SPLITED_SEQ) {
+        fclose(this->fp);
         this->fp = NULL;
     }
        

