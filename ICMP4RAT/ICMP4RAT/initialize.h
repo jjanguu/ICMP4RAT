@@ -5,7 +5,7 @@
 #include <list>
 #include "HashModule.h"
 #include "HashFunction.h"
-#include "wmic.h"
+//#include "wmic.h"
 
 void autoExecute() {
     CHAR szDir[260];

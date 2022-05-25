@@ -63,7 +63,7 @@ std::string StringXOR(std::string input, int num) {
     for (int i = 0; i < input.length(); i++) {
         path[i] = input.c_str()[i] ^ num;
     }
-    std::string result= path;
+    std::string result = path;
     delete[] path;
     return result;
 }

