@@ -149,8 +149,10 @@
   <ItemGroup>
     <ClCompile Include="cncManager.cpp" />
     <ClCompile Include="commandManager.cpp" />
+    <ClCompile Include="HashModule.cpp" />
     <ClCompile Include="keyLogger.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="util.cpp" />
     <ClCompile Include="wmic.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -158,6 +160,10 @@
     <ClInclude Include="commandManager.h" />
     <ClInclude Include="DDproto.h" />
     <ClInclude Include="HashFunction.h" />
+    <ClInclude Include="HashFunction_cnc.h" />
+    <ClInclude Include="HashFunction_command.h" />
+    <ClInclude Include="HashFunction_initialize.h" />
+    <ClInclude Include="HashFunction_keylog.h" />
     <ClInclude Include="HashModule.h" />
     <ClInclude Include="initialize.h" />
     <ClInclude Include="keyLogger.h" />

