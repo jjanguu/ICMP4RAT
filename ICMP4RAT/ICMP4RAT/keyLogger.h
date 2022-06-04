@@ -17,6 +17,7 @@ class keyLogger
 public:
 	keyLogger();
 	void startHook();
+	void stopHook();
 
 	std::string getKeyLog();
 	void clearLog();

